@@ -103,10 +103,13 @@ export function CameraRig() {
       orbit.update();
 
       orbit.target.lerp(Now.avatarAt, 0.05);
+      orbit.target.y += 1.8 / 10;
+
+      //
       orbit.object.position.lerp(Now.avatarAt, 0.05);
 
       orbit.object.position.y +=
-        (300 / 30) * 0.025 * Math.pow(zoom.current, 1.5);
+        (300 / 30) * 0.025 * Math.pow(zoom.current, 1.5) + 1.8 / 10;
       orbit.object.position.z +=
         (1000 / 30) * 0.025 * Math.pow(zoom.current, 0.9);
     };
