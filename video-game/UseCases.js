@@ -32,22 +32,6 @@ import { FileLoader } from "three";
 
 export const ResourceDB = [
   {
-    url: "/actions/locomotion/running.fbx",
-    key: "running",
-    preload: true,
-  },
-  {
-    url: "/actions/locomotion/standing-time.fbx",
-    key: "standingTime",
-    preload: true,
-  },
-  {
-    url: "/actions/locomotion/standing.fbx",
-    key: "standing",
-    preload: true,
-  },
-
-  {
     url: "/font/Cronos-Pro-Light_12448.ttf",
     key: "cronosProFont",
     preload: true,
@@ -455,9 +439,7 @@ export function MainAvatarLogic({ url }) {
   let running = useFBX(
     `/chibi/actions-for-this/contorls/running-in-place-relax.fbx`
   );
-  let standingTime = useFBX(
-    `/chibi/actions-for-this/contorls/idle-breathing.fbx`
-  );
+  let standing = useFBX(`/chibi/actions-for-this/contorls/idle-breathing.fbx`);
   let mixer = useMemo(() => new AnimationMixer(), []);
 
   useEffect(() => {
@@ -485,7 +467,7 @@ export function MainAvatarLogic({ url }) {
       if (Now.avatarMode === "standing") {
         //300
 
-        let clips = [standingTime.animations[0]];
+        let clips = [standing.animations[0]];
         let clip = clips[Math.floor(clips.length * Math.random())];
         let action = mixer.clipAction(clip, ref.current);
         action.reset();
@@ -737,16 +719,17 @@ let loadAssets = async ({ avatarURL, avatarSignature }) => {
     //
     avatar,
     running,
-    standingTime,
     standing,
   ] = await Promise.all([
-    fbxPipe(avatarURL, avatarSignature),
+    fbxPipe(avatarURL, avatarSignature).then((a) => {
+      a.scene = a;
+      return a;
+    }),
     fbxPipe("/chibi/actions-for-this/contorls/running-in-place-relax.fbx"),
     fbxPipe("/chibi/actions-for-this/contorls/idle-breathing.fbx"),
-    fbxPipe("/chibi/actions-for-this/contorls/idle-happy.fbx"),
   ]);
 
-  return { avatar, running, standingTime, standing };
+  return { avatar, running, standing };
 };
 
 export function OtherAvatarDisplay({ uid, roomID }) {
@@ -823,7 +806,7 @@ export function OtherAvatarDisplay({ uid, roomID }) {
       loadAssets({
         avatarSignature: playerObj.avatarSignature,
         avatarURL: "/chibi/ChibiBase-rigged.fbx",
-      }).then(({ avatar, running, standingTime, standing }) => {
+      }).then(({ avatar, running, standing }) => {
         let cloned = SkeletonUtils.clone(avatar.scene);
         cloned.scale.set(0.0075, 0.0075, 0.0075);
         cloned.traverse((item) => {
@@ -899,7 +882,7 @@ export function OtherAvatarDisplay({ uid, roomID }) {
           if (mode.pose === "standing") {
             //300
 
-            let clips = [standing.animations[0], standingTime.animations[0]];
+            let clips = [standing.animations[0]];
             let clip = clips[Math.floor(clips.length * Math.random())];
             let action = mixer.clipAction(clip, o3d);
             action.reset();
