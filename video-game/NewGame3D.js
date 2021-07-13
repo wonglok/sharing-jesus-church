@@ -2,7 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { PCFShadowMap } from "three";
+import { PCFShadowMap, PCFSoftShadowMap } from "three";
 import { setup, firebase } from "./AppFirebase.js";
 
 function MyScene({ children }) {
@@ -60,7 +60,7 @@ export function NewGame3D() {
     <div className="w-full h-full">
       {typeof found === "object" && found !== null ? (
         <Canvas
-          shadowMap={PCFShadowMap}
+          shadowMap={PCFSoftShadowMap}
           dpr={
             (typeof window !== "undefined" && window.devicePixelRatio) || 1.0
           }

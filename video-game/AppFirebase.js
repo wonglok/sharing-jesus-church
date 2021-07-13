@@ -5,8 +5,7 @@ import "firebase/database";
 const firebaseConfig = {
   apiKey: "AIzaSyB-tfIbfq6okbv1tYReo585t_r4zFvf-rI",
   authDomain: "effectnode.firebaseapp.com",
-  databaseURL:
-    "https://effectnode-thankyoulove.asia-southeast1.firebasedatabase.app/",
+  databaseURL: "https://sharing-jesus-church.firebaseio.com/",
   projectId: "effectnode",
   storageBucket: "effectnode.appspot.com",
   messagingSenderId: "316567530740",

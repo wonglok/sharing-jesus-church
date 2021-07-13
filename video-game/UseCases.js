@@ -29,6 +29,7 @@ import { BoxBufferGeometry } from "three";
 import { download } from "../vfx-runtime/ENUtils";
 import { TextureLoader } from "three";
 import { FileLoader } from "three";
+import router from "next/router";
 
 export const ResourceDB = [
   {
@@ -617,6 +618,9 @@ export function GameDataReceiver() {
         if (profile) {
           Now.profile = profile;
           Now.user = user;
+        } else if (!snap || !profile) {
+          //
+          router.push("/avatar");
         }
       });
     });

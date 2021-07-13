@@ -3,8 +3,6 @@ import {
   // useFBX,
   useCubeTexture,
   useFBX,
-  useGLTF,
-  useTexture,
 } from "@react-three/drei";
 import { Suspense, useEffect, useMemo } from "react";
 import { SkeletonUtils } from "three-stdlib";
@@ -20,21 +18,8 @@ import {
 } from "./UseCases";
 import {
   CubeReflectionMapping,
-  MeshBasicMaterial,
-
-  //
   CubeRefractionMapping,
-  // MeshLambertMaterial,
-  // Object3D,
-  // PMREMGenerator,
-  // MeshMatcapMaterial,
-  // MeshPhongMaterial,
-  DoubleSide,
   MeshStandardMaterial,
-  // Vector2,
-  // MeshStandardMaterial,
-  // Color,
-  // Vector3,
 } from "three";
 
 import { useFrame, useThree } from "@react-three/fiber";
@@ -43,7 +28,7 @@ import { setup, firebase } from "./AppFirebase";
 // import { Debug, Physics, useConvexPolyhedron } from "@react-three/cannon";
 // import { Grapes } from "../Game3D/MapBubbles";
 // import { sRGBEncoding } from "three";
-// import { CameraRigOrbit } from "./CameraRigOrbit";
+import { CameraRigOrbit } from "./CameraRigOrbit";
 import { Now } from "./Now";
 // import { ShaderCubeChrome } from "../Shaders/ShaderCubeChrome";
 // import { ENRuntime } from "../ENCloudSDK/ENRuntime";
@@ -52,6 +37,7 @@ import { ENMini } from "../vfx-runtime/ENMini";
 // import { WiggleTrackerObject } from "../ENBatteries/museum/loklok";
 import { CameraRig } from "./CameraRig";
 import { RepeatWrapping } from "three";
+import { CameraRigOrbitBirdView } from "./CameraRigOrbitBirdView";
 
 function MapFloor() {
   let { gl, scene } = useThree();
@@ -108,10 +94,19 @@ function MapFloor() {
 
   // let matcapSilverA = useTexture(`/texture/detection.png`);
 
+  // useEffect(() => {
+  //   scene.add(newFloor);
+
+  //   return () => {
+  //     scene.remove(newFloor);
+  //   };
+  // }, []);
+
   let floor = useMemo(() => {
     let environment = SkeletonUtils.clone(map.scene);
+
     environment.scale.set(0.05, 0.05, 0.05);
-    environment.rotation.y = Math.PI * 0.0;
+    environment.rotation.y = Math.PI * 0.25;
 
     environment.position.y = -2;
     environment.traverse((item) => {
@@ -126,34 +121,48 @@ function MapFloor() {
         // rainbow.out.envMap.mapping = CubeRefractionMapping;
         // rainbow.out.texture.repeat.x = 0.1;
         // rainbow.out.texture.repeat.y = 0.1;
+        item.receiveShadow = true;
+        item.castShadow = true;
 
         item.material = new MeshStandardMaterial({
-          side: DoubleSide,
-          roughness: 0.1,
-          metalness: 1.0,
-          // envMap: cubeMap,
-          // map: px,
-          // map: ball,
-          // map: rainbow.out.texture,
+          roughness: 1,
+          metalness: 0.0,
         });
       }
     });
 
+    // let floorGeo = new CircleBufferGeometry(120, 64);
+    // let newFloor = new Mesh(
+    //   floorGeo,
+    //   new MeshStandardMaterial({
+    //     roughness: 0.1,
+    //     metalness: 0.6,
+    //   })
+    // );
+    // newFloor.geometry.rotateX(Math.PI * -0.5);
+    // newFloor.receiveShadow = true;
+    // newFloor.castShadow = true;
+
+    // environment.add(newFloor);
+
     return environment;
   }, []);
+  let startAt = {
+    x: 0.45129372677891655,
+    y: 0,
+    z: 68.12215458593136,
+  };
+
+  useFrame(() => {
+    if (floor) {
+      floor.getObjectByName("door");
+    }
+  });
 
   useEffect(() => {
-    Now.avatarAt.copy({
-      x: 0,
-      y: 0,
-      z: 2.0,
-    });
-    Now.goingTo.copy({
-      x: 0,
-      y: 0,
-      z: 2.0,
-    });
-  }, []);
+    Now.avatarAt.copy(startAt);
+    Now.goingTo.copy(startAt);
+  }, [startAt]);
 
   return (
     <>
@@ -162,15 +171,28 @@ function MapFloor() {
           <primitive object={floor}></primitive>
 
           <MapSimulation
-            startAt={{
-              x: 0,
-              y: 0,
-              z: 0,
-            }}
+            startAt={startAt}
             debugCollider={false}
             floor={floor}
           ></MapSimulation>
           <DataEmitter></DataEmitter>
+
+          <pointLight
+            position-y={35}
+            distance={1200}
+            color={`#eeeeee`}
+            castShadow={true}
+            intensity={5}
+            shadow-radius={3.5}
+            shadow-camera-near={0.1}
+            shadow-camera-far={1200}
+            shadow-camera-top={1200}
+            shadow-camera-bottom={-1200}
+            shadow-camera-left={-1200}
+            shadow-camera-right={1200}
+            shadow-mapSize-x={512}
+            shadow-mapSize-y={512}
+          ></pointLight>
 
           <Suspense fallback={null}>
             <MainAvatarLoader></MainAvatarLoader>
@@ -277,21 +299,21 @@ export function MapScene() {
   return (
     <>
       <CameraRig></CameraRig>
-      {/* <CameraRigOrbit></CameraRigOrbit> */}
+      {/* <CameraRigOrbitBirdView></CameraRigOrbitBirdView> */}
 
       <Bloomer></Bloomer>
       {/* <NoBloomRenderLoop></NoBloomRenderLoop> */}
-
+      {/*
       <directionalLight
         intensity={0.7}
         position={[10, 10, 10]}
       ></directionalLight>
+ */}
 
       <directionalLight
-        intensity={0.7}
-        position={[-10, 10, 10]}
+        intensity={0.3}
+        position={[0, 10, 10]}
       ></directionalLight>
-
       <Suspense fallback={null}>
         <EnvMap></EnvMap>
         <MapFloor></MapFloor>

@@ -15,7 +15,7 @@ export function EnvMap() {
   // }, []);
 
   useEffect(() => {
-    let amb = new AmbientLight(0xffffff, 0.3);
+    let amb = new AmbientLight(0xffffff, 0.125);
     scene.add(amb);
 
     const pmremGenerator = new PMREMGenerator(gl);
