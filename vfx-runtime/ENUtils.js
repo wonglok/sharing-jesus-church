@@ -17,6 +17,19 @@ export const makeShallowStore = (myObject = {}) => {
     getNameSpcaeID: () => {
       return ___NameSpaceID;
     },
+    /* */
+    onEventChangeKey: (key, func) => {
+      let evName = `${___NameSpaceID}`;
+      let hh = () => {
+        func(myObject[key]);
+      };
+
+      window.addEventListener(`${evName}-${key}`, hh);
+      return () => {
+        window.removeEventListener(`${evName}-${key}`, hh);
+      };
+    },
+    /* */
 
     onChange: (key, func) => {
       let evName = `${___NameSpaceID}`;

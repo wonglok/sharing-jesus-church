@@ -11,7 +11,7 @@ import { getGPUTier } from "detect-gpu";
 export async function getStaticProps(context) {
   return {
     props: {
-      graphA: await getEffectNodeData(`-MdBQtfGPXXPkl-NuEoW`), //
+      graphA: await getEffectNodeData(`-MdpjYaW92H7i_pMHiCD`), //
     },
   };
 }
@@ -61,14 +61,14 @@ export default function IndexPage({ graphA }) {
         <OrbitControls enableRotate={false} enablePan={false}></OrbitControls>
       </Canvas>
 
-      <div className="absolute top-0 right-0">
+      {/* <div className="absolute top-0 right-0">
         <a href="https://docs.effectnode.com/" target="_blank">
-          <button className="m-3 text-sm bg-white border p-3">Docs</button>
+          <button className="m-3 text-sm bg-white border p-3">Docs</b`utton>
         </a>
         <a href="https://effectnode.com/" target="_blank">
           <button className="m-3 text-sm bg-white border p-3">Home</button>
         </a>
-      </div>
+      </div> */}
     </div>
   );
 }
