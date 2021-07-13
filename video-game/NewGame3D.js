@@ -26,6 +26,14 @@ let Pages = [
       import("./MapMultitude.js").then((e) => e.MapScene)
     ),
   },
+  {
+    name: "chill",
+    Component: dynamic(() =>
+      import("./MapPlaceToChill.js").then((e) => e.MapScene)
+    ),
+  },
+
+  // MapPlaceToChill
 ];
 
 export function NewGame3D() {
