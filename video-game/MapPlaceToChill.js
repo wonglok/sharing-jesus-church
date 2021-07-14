@@ -92,6 +92,8 @@ function MapFloor() {
   cubeMap.mapping = CubeRefractionMapping;
   cubeMap.mapping = CubeReflectionMapping;
 
+  // public/church/holy-cross.fbx
+
   // useEffect(() => {
   //   // scene.background = cubeMap;
   // }, [cubeMap]);
@@ -199,7 +201,7 @@ function MapFloor() {
                 shadow-mapSize-y={512}
               ></pointLight>
 
-              <Sphere
+              {/* <Sphere
                 onUpdate={(s) => {
                   enableBloom(s);
                 }}
@@ -210,7 +212,7 @@ function MapFloor() {
                   opacity={0.5}
                   color="#777777"
                 ></meshBasicMaterial>
-              </Sphere>
+              </Sphere> */}
             </Floating>
           </group>
 
@@ -353,7 +355,36 @@ export function MapScene() {
       <Suspense fallback={null}>
         <EnvMap></EnvMap>
         <MapFloor></MapFloor>
+        <group position-y={20}>
+          <Floating>
+            <Cross></Cross>
+          </Floating>
+        </group>
       </Suspense>
     </>
+  );
+}
+
+function Cross() {
+  let fbx = useFBX(`/church/holy-cross.fbx`);
+
+  useEffect(() => {
+    fbx.traverse((it) => {
+      if (it.material) {
+        // enableBloom(it);
+        it.material.color = new Color("#121212");
+      }
+    });
+  }, [fbx]);
+  return (
+    <group scale={0.09}>
+      <primitive
+        position-x={-15}
+        position-y={15}
+        rotation-y={Math.PI * (0.25 + 0.5 + 0.1)}
+        rotation-x={Math.PI * -0.5}
+        object={fbx}
+      ></primitive>
+    </group>
   );
 }
