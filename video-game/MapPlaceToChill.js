@@ -178,18 +178,18 @@ function MapFloor() {
           <DataEmitter></DataEmitter>
 
           <pointLight
-            position-y={35}
-            distance={1200}
+            position-y={30}
+            distance={120}
             color={`#eeeeee`}
             castShadow={true}
             intensity={5}
             shadow-radius={3.5}
             shadow-camera-near={0.1}
-            shadow-camera-far={1200}
-            shadow-camera-top={1200}
-            shadow-camera-bottom={-1200}
-            shadow-camera-left={-1200}
-            shadow-camera-right={1200}
+            shadow-camera-far={120}
+            shadow-camera-top={120}
+            shadow-camera-bottom={-120}
+            shadow-camera-left={-120}
+            shadow-camera-right={120}
             shadow-mapSize-x={512}
             shadow-mapSize-y={512}
           ></pointLight>

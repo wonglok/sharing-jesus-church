@@ -8,8 +8,9 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import router from "next/router";
 import { getID } from "../vfx-runtime/ENUtils";
 import { setup, onReady, firebase } from "../video-game/AppFirebase";
-import { Canvas } from "@react-three/fiber";
-import { Text } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls, Text, useFBX } from "@react-three/drei";
+import { AnimationMixer, DoubleSide } from "three";
 
 function AvatarChooser({
   onReady = (v) => {
@@ -65,7 +66,69 @@ function AvatarChooser({
 }
 
 function Chibi() {
-  return <group>{/*  */}</group>;
+  let chibi = useFBX(`/chibi/ChibiBase-rigged.fbx`);
+  let idle = useFBX(`/chibi/actions-for-this/contorls/idle-happy.fbx`);
+
+  let three = useThree((s) => {
+    chibi.traverse((k) => {
+      if (k.material) {
+        k.material.side = DoubleSide;
+      }
+    });
+
+    let mixer = new AnimationMixer();
+    let action = mixer.clipAction(idle.animations[0], chibi);
+    action.play();
+
+    s.mixer = mixer;
+    // mixer
+    return s;
+  });
+  useFrame((st, dt) => {
+    three.mixer.update(dt);
+  });
+
+  //
+  useEffect((s) => {
+    if (s) {
+      let { camera } = s;
+
+      let head = chibi.getObjectByName("mixamorigHead");
+      if (head) {
+        head.getWorldPosition(camera.position);
+        camera.position.z -= 5;
+        camera.lookAt(
+          camera.position.x,
+          camera.position.y + 15,
+          camera.position.z - 5
+        );
+      }
+    }
+
+    return () => {
+      //
+    };
+  }, []);
+  return (
+    <group>
+      <ambientLight intensity={0.15} />
+      <pointLight position={[0, 130, 100]}></pointLight>
+      <primitive scale={0.0075} object={chibi}></primitive>
+      <OrbitControls
+        onUpdate={(orbit) => {
+          let head = chibi.getObjectByName("mixamorigHead");
+          if (head) {
+            head.getWorldPosition(orbit.target);
+            orbit.target.y += 0.5;
+            orbit.object.position.copy(orbit.target);
+            orbit.object.position.y += 1;
+            orbit.object.position.z += 5;
+          }
+        }}
+      ></OrbitControls>
+      {/*  */}
+    </group>
+  );
 }
 
 function AvatarLayer() {
