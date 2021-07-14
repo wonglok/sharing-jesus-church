@@ -108,13 +108,13 @@ function MapFloor() {
   // }, []);
 
   let { floor } = useMemo(() => {
-    let display = SkeletonUtils.clone(map.scene);
+    let src = SkeletonUtils.clone(map.scene);
 
-    display.scale.set(0.05, 0.05, 0.05);
-    display.rotation.y = Math.PI * 0.25;
+    src.scale.set(0.05, 0.05, 0.05);
+    src.rotation.y = Math.PI * 0.25;
 
-    display.position.y = -2;
-    display.traverse((item) => {
+    src.position.y = -2;
+    src.traverse((item) => {
       if (item.material) {
         item.receiveShadow = true;
         item.castShadow = true;
@@ -133,9 +133,9 @@ function MapFloor() {
           item.material.side = FrontSide;
         }
 
-        // if (item.name === "door") {
-        //   item.userData.skipFloorGen = true;
-        // }
+        if (item.name === "door") {
+          item.userData.skipFloorGen = true;
+        }
 
         if (item.name === "pillar-screw") {
           item.userData.skipFloorGen = true;
@@ -143,10 +143,11 @@ function MapFloor() {
       }
     });
 
-    let floor = SkeletonUtils.clone(display);
-
-    return { floor, display };
+    return { floor: src };
   }, []);
+
+  //
+
   let startAt = {
     x: 0.45129372677891655,
     y: 0,
