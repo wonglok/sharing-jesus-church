@@ -88,7 +88,7 @@ export function MapSimulation({
 
     environment.updateMatrixWorld();
     environment.traverse((c) => {
-      if (c.geometry) {
+      if (c.geometry && !c.userData.skipFloorGen) {
         const cloned = c.geometry.clone();
         cloned.applyMatrix4(c.matrixWorld);
 

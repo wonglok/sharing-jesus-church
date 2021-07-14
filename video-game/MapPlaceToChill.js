@@ -4,7 +4,7 @@ import {
   useCubeTexture,
   useFBX,
 } from "@react-three/drei";
-import { Suspense, useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { EnvMap } from "./EnvMap";
 import {
@@ -18,6 +18,7 @@ import {
 } from "./UseCases";
 import {
   BackSide,
+  Color,
   CubeReflectionMapping,
   CubeRefractionMapping,
   DoubleSide,
@@ -35,12 +36,13 @@ import { CameraRigOrbit } from "./CameraRigOrbit";
 import { Now } from "./Now";
 // import { ShaderCubeChrome } from "../Shaders/ShaderCubeChrome";
 // import { ENRuntime } from "../ENCloudSDK/ENRuntime";
-import { Bloomer } from "../vfx-library/Bloomer";
+import { Bloomer, enableBloom } from "../vfx-library/Bloomer";
 import { ENMini } from "../vfx-runtime/ENMini";
 // import { WiggleTrackerObject } from "../ENBatteries/museum/loklok";
 import { CameraRig } from "./CameraRig";
 import { RepeatWrapping } from "three";
 import { CameraRigOrbitBirdView } from "./CameraRigOrbitBirdView";
+import { Sphere } from "@react-three/drei";
 
 function MapFloor() {
   let { gl, scene } = useThree();
@@ -105,25 +107,15 @@ function MapFloor() {
   //   };
   // }, []);
 
-  let floor = useMemo(() => {
-    let environment = SkeletonUtils.clone(map.scene);
+  let { floor } = useMemo(() => {
+    let display = SkeletonUtils.clone(map.scene);
 
-    environment.scale.set(0.05, 0.05, 0.05);
-    environment.rotation.y = Math.PI * 0.25;
+    display.scale.set(0.05, 0.05, 0.05);
+    display.rotation.y = Math.PI * 0.25;
 
-    environment.position.y = -2;
-    environment.traverse((item) => {
-      // remove from floor
-      // if (item && item.geometry) {
-      //   if (item.name === "SWIMMING_POOL_WATER" && item.parent) {
-      //     item.parent.remove(item);
-      //   }
-      // }
-
+    display.position.y = -2;
+    display.traverse((item) => {
       if (item.material) {
-        // rainbow.out.envMap.mapping = CubeRefractionMapping;
-        // rainbow.out.texture.repeat.x = 0.1;
-        // rainbow.out.texture.repeat.y = 0.1;
         item.receiveShadow = true;
         item.castShadow = true;
 
@@ -132,6 +124,7 @@ function MapFloor() {
           metalness: 0.0,
           side: DoubleSide,
           flatShading: true,
+          color: new Color("#999999"),
         });
 
         console.log(item.name);
@@ -139,24 +132,20 @@ function MapFloor() {
           //
           item.material.side = FrontSide;
         }
+
+        // if (item.name === "door") {
+        //   item.userData.skipFloorGen = true;
+        // }
+
+        if (item.name === "pillar-screw") {
+          item.userData.skipFloorGen = true;
+        }
       }
     });
 
-    // let floorGeo = new CircleBufferGeometry(120, 64);
-    // let newFloor = new Mesh(
-    //   floorGeo,
-    //   new MeshStandardMaterial({
-    //     roughness: 0.1,
-    //     metalness: 0.6,
-    //   })
-    // );
-    // newFloor.geometry.rotateX(Math.PI * -0.5);
-    // newFloor.receiveShadow = true;
-    // newFloor.castShadow = true;
+    let floor = SkeletonUtils.clone(display);
 
-    // environment.add(newFloor);
-
-    return environment;
+    return { floor, display };
   }, []);
   let startAt = {
     x: 0.45129372677891655,
@@ -188,22 +177,39 @@ function MapFloor() {
           ></MapSimulation>
           <DataEmitter></DataEmitter>
 
-          <pointLight
-            position-y={30}
-            distance={120}
-            color={`#eeeeee`}
-            castShadow={true}
-            intensity={5}
-            shadow-radius={3.5}
-            shadow-camera-near={0.1}
-            shadow-camera-far={120}
-            shadow-camera-top={120}
-            shadow-camera-bottom={-120}
-            shadow-camera-left={-120}
-            shadow-camera-right={120}
-            shadow-mapSize-x={512}
-            shadow-mapSize-y={512}
-          ></pointLight>
+          <group position-y={5}>
+            <Floating>
+              <pointLight
+                position-y={30}
+                distance={1200}
+                color={`#555555`}
+                castShadow={true}
+                intensity={10}
+                shadow-radius={3.5}
+                shadow-camera-near={0.1}
+                shadow-camera-far={250}
+                shadow-camera-top={250}
+                shadow-camera-bottom={-250}
+                shadow-camera-left={-250}
+                shadow-camera-right={250}
+                shadow-mapSize-x={512}
+                shadow-mapSize-y={512}
+              ></pointLight>
+
+              <Sphere
+                onUpdate={(s) => {
+                  enableBloom(s);
+                }}
+                args={[3, 32, 32]}
+              >
+                <meshBasicMaterial
+                  transparent={true}
+                  opacity={0.5}
+                  color="#777777"
+                ></meshBasicMaterial>
+              </Sphere>
+            </Floating>
+          </group>
 
           <Suspense fallback={null}>
             <MainAvatarLoader></MainAvatarLoader>
@@ -219,6 +225,22 @@ function MapFloor() {
       )}
     </>
   );
+}
+
+function Floating({ children }) {
+  let ref = useRef();
+  useEffect(() => {
+    //
+  }, []);
+  let time = 0;
+  useFrame((st, dt) => {
+    if (dt >= 1 / 60) {
+      dt = 1 / 60;
+    }
+    time += dt;
+    ref.current.position.y = Math.sin(time) * 5.0;
+  });
+  return <group ref={ref}>{children}</group>;
 }
 
 // let loadBattriesInFolder = () => {
