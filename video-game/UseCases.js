@@ -801,11 +801,16 @@ export function OtherAvatarDisplay({ uid, roomID }) {
       .database()
       .ref(`rooms/${roomID}/${uid}`)
       .on("value", (snap) => {
-        let val = snap.val();
-        playerRef.current = val;
+        if (snap) {
+          let val = snap.val();
 
-        if (val.avatarTextureRefURL !== null) {
-          setChibiURL({ chibi: chibi, refURL: val.avatarTextureRefURL });
+          if (val) {
+            playerRef.current = val;
+          }
+
+          if (val && val.avatarTextureRefURL) {
+            setChibiURL({ chibi: chibi, refURL: val.avatarTextureRefURL });
+          }
         }
       });
   }, []);

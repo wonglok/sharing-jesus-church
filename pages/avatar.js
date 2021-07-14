@@ -97,6 +97,13 @@ function AvatarChooser({
             AvaState.avatarTextureRefURL = refURL;
             AvaState.panel = "";
 
+            onReady().then(({ db, user }) => {
+              db.ref(`profiles/${user.uid}/avatarURL`).set(
+                `/chibi/ChibiBase-rigged.fbx`
+              );
+              db.ref(`profiles/${user.uid}/avatarSignature`).set(getID());
+            });
+
             if (refURL !== null) {
               onReady().then(({ db, user }) => {
                 db.ref(`profiles/${user.uid}/avatarTextureRefURL`).set(refURL);
@@ -143,6 +150,19 @@ function Chibi() {
   AvaState.useReactiveKey("avatarTextureRefURL", (url) => {
     setChibiURL({ chibi, refURL: url });
   });
+
+  useEffect(() => {
+    onReady().then(({ db, user }) => {
+      db.ref(`profiles/${user.uid}/avatarTextureRefURL`).once("value", (s) => {
+        if (s) {
+          let v = s.val();
+          if (v) {
+            setChibiURL({ chibi, refURL: v });
+          }
+        }
+      });
+    });
+  }, []);
 
   //
   useEffect((s) => {
@@ -198,7 +218,6 @@ function Chibi() {
             orbit.target.y += 0.5;
             orbit.object.position.copy(orbit.target);
 
-            orbit.object.position.x += -3;
             orbit.object.position.y += 1;
             orbit.object.position.z += 5;
 
