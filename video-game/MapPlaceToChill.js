@@ -17,8 +17,11 @@ import {
   DisplayOtherUsers,
 } from "./UseCases";
 import {
+  BackSide,
   CubeReflectionMapping,
   CubeRefractionMapping,
+  DoubleSide,
+  FrontSide,
   MeshStandardMaterial,
 } from "three";
 
@@ -127,7 +130,15 @@ function MapFloor() {
         item.material = new MeshStandardMaterial({
           roughness: 1,
           metalness: 0.0,
+          side: DoubleSide,
+          flatShading: true,
         });
+
+        console.log(item.name);
+        if (item.name === "Circle") {
+          //
+          item.material.side = FrontSide;
+        }
       }
     });
 
