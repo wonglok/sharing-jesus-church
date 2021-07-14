@@ -356,9 +356,9 @@ export function MapScene() {
         <EnvMap></EnvMap>
         <MapFloor></MapFloor>
         <group position-y={20}>
-          <Floating>
-            <Cross></Cross>
-          </Floating>
+          {/* <Floating> */}
+          <Cross></Cross>
+          {/* </Floating> */}
         </group>
       </Suspense>
     </>
