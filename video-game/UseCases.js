@@ -23,13 +23,14 @@ import { Now } from "./Now";
 import { useFBX, useGLTF } from "@react-three/drei";
 import { AnimationMixer } from "three";
 // import { Assets } from "../Game3D/Assets";
-import { onReady } from "./AppFirebase";
+import { getFire, onReady } from "./AppFirebase";
 import { makeShallowStore } from "../vfx-runtime/ENUtils";
 import { BoxBufferGeometry } from "three";
 import { download } from "../vfx-runtime/ENUtils";
 import { TextureLoader } from "three";
 import { FileLoader } from "three";
 import router from "next/router";
+import { setChibiURL } from "../pages/avatar";
 
 export const ResourceDB = [
   {
@@ -171,6 +172,8 @@ export function MapSimulation({
         y = e.clientY;
 
         Now.isDown = false;
+
+        Now.needsSync = true;
       },
       goMove: (e) => {
         if (e) {
@@ -416,11 +419,30 @@ export function MapSimulation({
   );
 }
 
-export function MainAvatarLogic({ url }) {
+export function MainAvatarLogic({ profile, url }) {
   let ref = useRef();
 
-  let gltf = useFBX(url);
+  let raw = useFBX(profile.avatarURL);
+  let gltf = useMemo(() => {
+    let other = SkeletonUtils.clone(raw);
+
+    other.traverse((item) => {
+      if (item.material) {
+        item.material = item.material.clone();
+      }
+    });
+
+    return other;
+  }, [raw]);
+
   gltf.scene = gltf;
+
+  useEffect(() => {
+    //
+    if (profile.avatarTextureRefURL) {
+      setChibiURL({ chibi: gltf.scene, refURL: profile.avatarTextureRefURL });
+    }
+  }, [profile.avatarTextureRefURL]);
 
   let model = useMemo(() => {
     let cloned = SkeletonUtils.clone(gltf.scene);
@@ -520,24 +542,25 @@ export function getRoomID() {
 }
 
 export function DataEmitter() {
-  let DBRef = false;
-  useEffect(() => {
-    onReady().then(({ db, user }) => {
-      var userData = db.ref(`rooms/${getRoomID()}/${user.uid}`);
-      DBRef = userData;
-    });
-  }, []);
+  // let DBRef = false;
+  // useEffect(() => {
+  //   onReady().then(({ db, user }) => {
+  //     var userData = db.ref(`rooms/${getRoomID()}/${user.uid}`);
+  //     DBRef = userData;
+  //   });
+  // }, []);
 
   //
 
-  let tt = 0;
   let refresh = ({ avatarAt, goingTo }) => {
-    clearTimeout(tt);
-    tt = setTimeout(() => {
-      if (DBRef && Now.profile) {
+    onReady().then(({ db, user }) => {
+      let DBRef = db.ref(`rooms/${getRoomID()}/${user.uid}`);
+      if (Now.profile) {
         DBRef.update({
           avatarURL: Now.profile.avatarURL,
           avatarSignature: Now.profile.avatarSignature,
+          avatarTextureRefURL: Now.profile.avatarTextureRefURL,
+          //
           avatarAt: {
             x: avatarAt.x,
             y: avatarAt.y,
@@ -556,13 +579,14 @@ export function DataEmitter() {
   useEffect(() => {
     let last = false;
     let ttt = setInterval(() => {
-      let sig =
+      let signature =
         Now.goingTo.length().toFixed(1) + Now.avatarAt.length().toFixed(1);
-      if (last !== sig && Now.isDown) {
-        last = sig;
+      if (last !== signature || Now.needsSync) {
+        Now.needsSync = false;
+        last = signature;
         refresh({ goingTo: Now.goingTo, avatarAt: Now.avatarAt });
       }
-    }, 250);
+    }, 200);
     //
     return () => {
       clearInterval(ttt);
@@ -648,7 +672,10 @@ export function MainAvatarLoader() {
   return (
     <>
       {Now.profile && (
-        <MainAvatarLogic url={`/chibi/ChibiBase-rigged.fbx`}></MainAvatarLogic>
+        <MainAvatarLogic
+          profile={Now.profile}
+          url={`/chibi/ChibiBase-rigged.fbx`}
+        ></MainAvatarLogic>
       )}
     </>
   );
@@ -737,177 +764,324 @@ let loadAssets = async ({ avatarURL, avatarSignature }) => {
 };
 
 export function OtherAvatarDisplay({ uid, roomID }) {
-  let { scene } = useThree();
-  let works = useRef({});
+  let mixer = useRef();
+  let playerRef = useRef();
+  let gpRef = useRef();
 
-  const mode = useMemo(() => {
-    return makeShallowStore({
-      pose: "running",
+  let raw = useFBX("/chibi/ChibiBase-rigged.fbx");
+  let chibi = useMemo(() => {
+    let other = SkeletonUtils.clone(raw);
+
+    other.traverse((item) => {
+      if (item.material) {
+        item.material = item.material.clone();
+      }
     });
-  }, []);
+
+    return other;
+  }, [raw]);
+
+  let running = useFBX(
+    "/chibi/actions-for-this/contorls/running-in-place-relax.fbx"
+  );
+  let standing = useFBX("/chibi/actions-for-this/contorls/idle-breathing.fbx");
+
+  const modeRef = useRef();
+
+  //
 
   useEffect(() => {
-    let clean = () => {};
-    let player = false;
-    onReady().then(({ db }) => {
-      //
-      db.ref(`rooms/${roomID}/${uid}`).on("value", (snap) => {
-        let val = snap.val();
-        player = val;
-      });
+    mixer.current = new AnimationMixer();
 
-      db.ref(`rooms/${roomID}/${uid}/avatarSignature`).on("value", () => {
-        //
-        db.ref(`rooms/${roomID}/${uid}`).once("value", (snap) => {
-          let val = snap.val();
-          let playerObj = val;
-          if (playerObj) {
-            setupPlayer(playerObj);
-          }
-        });
-      });
-
-      // db.ref(`rooms/${roomID}/${uid}/avatarSignature`).once("value", () => {
-      //   let val = snap.val();
-      //   if (player) {
-      //     setupPlayer(playerObj);
-      //   }
-      // });
+    modeRef.current = makeShallowStore({
+      pose: "running",
     });
 
-    let lastClean = () => {};
-    let setupPlayer = (playerObj) => {
-      lastClean();
+    getFire()
+      .database()
+      .ref(`rooms/${roomID}/${uid}`)
+      .on("value", (snap) => {
+        let val = snap.val();
+        playerRef.current = val;
 
-      let o3d = new Object3D();
-
-      scene.add(o3d);
-      clean = () => {
-        scene.remove(o3d);
-      };
-      lastClean = () => {
-        scene.remove(o3d);
-      };
-
-      let mixer = new AnimationMixer(o3d);
-
-      let loading = new Mesh(
-        new BoxBufferGeometry(3 / 10, 13 / 10, 3 / 10),
-        new MeshBasicMaterial({ color: 0xbababa })
-      );
-
-      //
-      loading.position.copy(playerObj.avatarAt);
-      loading.position.y = 18 / 2;
-
-      //
-      works.current.avaloading = ({ dt }) => {
-        loading.rotation.y += dt;
-      };
-
-      o3d.add(loading);
-
-      loadAssets({
-        avatarSignature: playerObj.avatarSignature,
-        avatarURL: "/chibi/ChibiBase-rigged.fbx",
-      }).then(({ avatar, running, standing }) => {
-        let cloned = SkeletonUtils.clone(avatar.scene);
-        cloned.scale.set(0.0075, 0.0075, 0.0075);
-        cloned.traverse((item) => {
-          if (item.material) {
-            item.frustumCulled = false;
-          }
-        });
-
-        o3d.remove(loading);
-
-        //
-        o3d.add(cloned);
-
-        let needsInit = true;
-        let goingtoLerp = new Vector3(0, 0, 0);
-        let at = new Vector3();
-        works.current.ava = ({ st, dt }) => {
-          if (player) {
-            at.copy(player.avatarAt);
-            if (needsInit) {
-              o3d.position.copy(player.avatarAt);
-              goingtoLerp.copy(player.avatarAt);
-              goingtoLerp.z += 1;
-              o3d.lookAt(goingtoLerp.x, goingtoLerp.y, goingtoLerp.z);
-              needsInit = false;
-            } else {
-              o3d.position.lerp(player.avatarAt, 0.05);
-            }
-
-            goingtoLerp.lerp(player.goingTo, 0.03);
-
-            o3d.lookAt(goingtoLerp.x, goingtoLerp.y, goingtoLerp.z);
-
-            if (o3d.position.distanceTo(player.avatarAt) < 1) {
-              mode.pose = "standing";
-              o3d.rotation.x = 0.000001;
-              o3d.rotation.z = 0.000001;
-            } else {
-              mode.pose = "running";
-            }
-
-            // ref.current.position.x = player.goingTo.x || 0;
-            // ref.current.position.y = player.goingTo.y || 0;
-            // ref.current.position.z = player.goingTo.z || 0;
-          }
-        };
-
-        works.current.avaMixer = ({ st, dt }) => {
-          mixer.update(dt);
-        };
-
-        let lastAction = { current: false, mode: false };
-
-        let runAction = () => {
-          if (lastAction.mdoe === mode.pose) {
-            return;
-          }
-          lastAction.mdoe = mode.pose;
-
-          if (lastAction.current) {
-            lastAction.current.fadeOut(0.3);
-          }
-
-          if (mode.pose === "running") {
-            //
-            let clip = running.animations[0];
-            let action = mixer.clipAction(clip, o3d);
-            action.reset();
-            action.fadeIn(0.2);
-            action.play();
-            lastAction.current = action;
-          }
-          if (mode.pose === "standing") {
-            //300
-
-            let clips = [standing.animations[0]];
-            let clip = clips[Math.floor(clips.length * Math.random())];
-            let action = mixer.clipAction(clip, o3d);
-            action.reset();
-            action.fadeIn(0.2);
-            action.play();
-            lastAction.current = action;
-          }
-        };
-
-        mode.onEventChangeKey("pose", runAction);
+        if (val.avatarTextureRefURL !== null) {
+          setChibiURL({ chibi: chibi, refURL: val.avatarTextureRefURL });
+        }
       });
-    };
-
-    return () => {
-      clean();
-    };
   }, []);
 
+  let needsInit = true;
+  let goingtoLerp = new Vector3(0, 0, 0);
+  let at = new Vector3();
+
   useFrame((st, dt) => {
-    Object.values(works.current).map((f) => f({ st, dt }));
+    mixer.current.update(dt);
+
+    if (playerRef.current && gpRef.current && playerRef.current.avatarAt) {
+      at.copy(playerRef.current.avatarAt);
+      if (needsInit) {
+        gpRef.current.position.copy(playerRef.current.avatarAt);
+        goingtoLerp.copy(playerRef.current.avatarAt);
+        goingtoLerp.z += 1;
+        gpRef.current.lookAt(goingtoLerp.x, goingtoLerp.y, goingtoLerp.z);
+        needsInit = false;
+      } else {
+        gpRef.current.position.lerp(playerRef.current.avatarAt, 0.05);
+      }
+
+      goingtoLerp.lerp(playerRef.current.goingTo, 0.03);
+
+      gpRef.current.lookAt(goingtoLerp.x, goingtoLerp.y, goingtoLerp.z);
+
+      if (gpRef.current.position.distanceTo(playerRef.current.avatarAt) < 1) {
+        modeRef.current.pose = "standing";
+        gpRef.current.rotation.x = 0.000001;
+        gpRef.current.rotation.z = 0.000001;
+      } else {
+        modeRef.current.pose = "running";
+      }
+    }
   });
 
-  return <group></group>;
+  useEffect(() => {
+    let lastAction = { current: false, mode: false };
+    modeRef.current.onEventChangeKey("pose", () => {
+      if (lastAction.mdoe === modeRef.current.pose) {
+        return;
+      }
+      lastAction.mdoe = modeRef.current.pose;
+
+      if (lastAction.current) {
+        lastAction.current.fadeOut(0.3);
+      }
+
+      if (
+        modeRef.current.pose === "running" &&
+        gpRef.current &&
+        mixer.current
+      ) {
+        //
+        let clip = running.animations[0];
+        let action = mixer.current.clipAction(clip, gpRef.current);
+        action.reset();
+        action.fadeIn(0.1);
+        action.play();
+        lastAction.current = action;
+      }
+      if (
+        modeRef.current.pose === "standing" &&
+        gpRef.current &&
+        mixer.current
+      ) {
+        //300
+
+        let clips = [standing.animations[0]];
+        let clip = clips[Math.floor(clips.length * Math.random())];
+        let action = mixer.current.clipAction(clip, gpRef.current);
+        action.reset();
+        action.fadeIn(0.1);
+        action.play();
+        lastAction.current = action;
+      }
+    });
+  }, []);
+
+  return (
+    <group>
+      <group scale={0.0075} ref={gpRef}>
+        <primitive object={chibi}></primitive>
+      </group>
+    </group>
+  );
 }
+
+// export function OtherAvatarDisplay({ uid, roomID }) {
+//   let { scene } = useThree();
+//   let works = useRef({});
+
+//   const mode = useMemo(() => {
+//     return makeShallowStore({
+//       pose: "running",
+//     });
+//   }, []);
+
+//   let playerRef = useRef(false);
+
+//   useEffect(() => {
+//     let clean = () => {};
+//     onReady().then(({ db }) => {
+//       //
+
+//       db.ref(`rooms/${roomID}/${uid}`).once("value", (snap) => {
+//         let val = snap.val();
+//         setupPlayer(val);
+
+//         db.ref(`rooms/${roomID}/${uid}`).on("value", (snap) => {
+//           let val = snap.val();
+//           playerRef.current = val;
+//         });
+//       });
+
+//       // db.ref(`rooms/${roomID}/${uid}/avatarSignature`).on("value", () => {
+//       //   //
+//       //   db.ref(`rooms/${roomID}/${uid}`).once("value", (snap) => {
+//       //     let val = snap.val();
+//       //     let playerObj = val;
+//       //     if (playerObj) {
+//       //       setupPlayer(playerObj);
+//       //     }
+//       //   });
+//       // });
+
+//       // db.ref(`rooms/${roomID}/${uid}/avatarSignature`).once("value", () => {
+//       //   let val = snap.val();
+//       //   if (player) {
+//       //     setupPlayer(playerObj);
+//       //   }
+//       // });
+//     });
+
+//     let lastClean = () => {};
+//     let setupPlayer = (playerObj) => {
+//       lastClean();
+
+//       let o3d = new Object3D();
+
+//       scene.add(o3d);
+//       clean = () => {
+//         scene.remove(o3d);
+//       };
+//       lastClean = () => {
+//         scene.remove(o3d);
+//       };
+
+//       let mixer = new AnimationMixer(o3d);
+
+//       let loading = new Mesh(
+//         new BoxBufferGeometry(3 / 10, 13 / 10, 3 / 10),
+//         new MeshBasicMaterial({ color: 0xbababa })
+//       );
+
+//       //
+//       if (playerObj.avatarAt) {
+//         loading.position.copy(playerObj.avatarAt);
+//       }
+//       loading.position.y = 18 / 2;
+
+//       //
+//       works.current.avaloading = ({ dt }) => {
+//         loading.rotation.y += dt;
+//       };
+
+//       o3d.add(loading);
+
+//       //
+
+//       loadAssets({
+//         avatarSignature: playerObj.avatarSignature,
+//         avatarURL: "/chibi/ChibiBase-rigged.fbx",
+//       }).then(({ avatar, running, standing }) => {
+//         let cloned = SkeletonUtils.clone(avatar.scene);
+//         cloned.scale.set(0.0075, 0.0075, 0.0075);
+//         cloned.traverse((item) => {
+//           if (item.material) {
+//             item.frustumCulled = false;
+//           }
+//         });
+
+//         if (playerObj.avatarTextureRefURL) {
+//           setChibiURL({ chibi: cloned, refURL: playerObj.avatarTextureRefURL });
+//         }
+
+//         o3d.remove(loading);
+
+//         //
+//         o3d.add(cloned);
+
+//         let needsInit = true;
+//         let goingtoLerp = new Vector3(0, 0, 0);
+//         let at = new Vector3();
+//         works.current.ava = ({ st, dt }) => {
+//           if (playerRef.current && playerRef.current.avatarAt) {
+//             at.copy(playerRef.current.avatarAt);
+//             if (needsInit) {
+//               o3d.position.copy(playerRef.current.avatarAt);
+//               goingtoLerp.copy(playerRef.current.avatarAt);
+//               goingtoLerp.z += 1;
+//               o3d.lookAt(goingtoLerp.x, goingtoLerp.y, goingtoLerp.z);
+//               needsInit = false;
+//             } else {
+//               o3d.position.lerp(playerRef.current.avatarAt, 0.05);
+//             }
+
+//             goingtoLerp.lerp(playerRef.current.goingTo, 0.03);
+
+//             o3d.lookAt(goingtoLerp.x, goingtoLerp.y, goingtoLerp.z);
+
+//             if (o3d.position.distanceTo(playerRef.current.avatarAt) < 1) {
+//               mode.pose = "standing";
+//               o3d.rotation.x = 0.000001;
+//               o3d.rotation.z = 0.000001;
+//             } else {
+//               mode.pose = "running";
+//             }
+
+//             // ref.current.position.x = player.goingTo.x || 0;
+//             // ref.current.position.y = player.goingTo.y || 0;
+//             // ref.current.position.z = player.goingTo.z || 0;
+//           }
+//         };
+
+//         works.current.avaMixer = ({ st, dt }) => {
+//           mixer.update(dt);
+//         };
+
+//         let lastAction = { current: false, mode: false };
+
+//         let runAction = () => {
+//           if (lastAction.mdoe === mode.pose) {
+//             return;
+//           }
+//           lastAction.mdoe = mode.pose;
+
+//           if (lastAction.current) {
+//             lastAction.current.fadeOut(0.3);
+//           }
+
+//           if (mode.pose === "running") {
+//             //
+//             let clip = running.animations[0];
+//             let action = mixer.clipAction(clip, o3d);
+//             action.reset();
+//             action.fadeIn(0.2);
+//             action.play();
+//             lastAction.current = action;
+//           }
+//           if (mode.pose === "standing") {
+//             //300
+
+//             let clips = [standing.animations[0]];
+//             let clip = clips[Math.floor(clips.length * Math.random())];
+//             let action = mixer.clipAction(clip, o3d);
+//             action.reset();
+//             action.fadeIn(0.2);
+//             action.play();
+//             lastAction.current = action;
+//           }
+//         };
+
+//         mode.onEventChangeKey("pose", runAction);
+//       });
+//     };
+
+//     return () => {
+//       clean();
+//     };
+//   }, []);
+
+//   useFrame((st, dt) => {
+//     Object.values(works.current).map((f) => f({ st, dt }));
+//   });
+
+//   return <group></group>;
+// }

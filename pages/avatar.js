@@ -6,17 +6,45 @@ import { Suspense, useEffect, useRef, useState } from "react";
 //   // saveProfileData,
 // } from "../pages-code/Game3D/GameState";
 import router from "next/router";
-import { getID } from "../vfx-runtime/ENUtils";
-import { setup, onReady, firebase } from "../video-game/AppFirebase";
+import { getID, makeShallowStore } from "../vfx-runtime/ENUtils";
+import { setup, onReady, firebase, getFire } from "../video-game/AppFirebase";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Text, useFBX } from "@react-three/drei";
-import { AnimationMixer, DoubleSide } from "three";
+import { OrbitControls, Plane, Text, useFBX } from "@react-three/drei";
+import { AnimationMixer, DoubleSide, TextureLoader } from "three";
+import { Gallery, getURLByRefURL } from "../video-game/Gallery";
+
+let AvaState = makeShallowStore({
+  panel: "",
+  avatarTextureRefURL: "",
+});
+
+export let setChibiURL = async ({ chibi, refURL }) => {
+  if (refURL !== null) {
+    let link = await getURLByRefURL(refURL);
+
+    chibi.traverse((k) => {
+      if (k.material) {
+        new TextureLoader().load(link, (tex) => {
+          k.material.map = tex;
+          k.material.needsUpdate = true;
+        });
+      }
+    });
+  } else if (refURL === "") {
+    chibi.traverse((k) => {
+      if (k.material) {
+        k.material.map = null;
+      }
+    });
+  }
+};
 
 function AvatarChooser({
-  onReady = (v) => {
+  goReady = (v) => {
     console.log(v);
   },
 }) {
+  AvaState.makeKeyReactive("panel");
   // const iframe = useRef();
 
   // useEffect(() => {
@@ -61,6 +89,25 @@ function AvatarChooser({
           <Chibi></Chibi>
         </Suspense>
       </Canvas>
+
+      {AvaState.panel === "gallery" && (
+        <Gallery
+          onPick={(v) => {
+            let refURL = v.data.refURL;
+            AvaState.avatarTextureRefURL = refURL;
+            AvaState.panel = "";
+
+            if (refURL !== null) {
+              onReady().then(({ db, user }) => {
+                db.ref(`profiles/${user.uid}/avatarTextureRefURL`).set(refURL);
+              });
+            }
+            // goReady(refURL);
+
+            // getFire().database().ref(`/`);
+          }}
+        ></Gallery>
+      )}
     </div>
   );
 }
@@ -88,6 +135,15 @@ function Chibi() {
     three.mixer.update(dt);
   });
 
+  useEffect(() => {
+    if (AvaState.avatarTextureRefURL) {
+      setChibiURL({ chibi, refURL: AvaState.avatarTextureRefURL });
+    }
+  }, [AvaState.avatarTextureRefURL]);
+  AvaState.useReactiveKey("avatarTextureRefURL", (url) => {
+    setChibiURL({ chibi, refURL: url });
+  });
+
   //
   useEffect((s) => {
     if (s) {
@@ -113,7 +169,27 @@ function Chibi() {
     <group>
       <ambientLight intensity={0.15} />
       <pointLight position={[0, 130, 100]}></pointLight>
-      <primitive scale={0.0075} object={chibi}></primitive>
+
+      <Text
+        fontSize={0.5}
+        font={`/font/Cronos-Pro-Light_12448.ttf`}
+        color="#232323"
+        position-y={0}
+        onClick={() => {
+          AvaState.panel = "gallery";
+        }}
+      >
+        Choose Clothes
+      </Text>
+
+      <primitive
+        onClick={() => {
+          AvaState.panel = "gallery";
+        }}
+        position-y={0.5}
+        scale={0.0075}
+        object={chibi}
+      ></primitive>
       <OrbitControls
         onUpdate={(orbit) => {
           let head = chibi.getObjectByName("mixamorigHead");
@@ -121,11 +197,17 @@ function Chibi() {
             head.getWorldPosition(orbit.target);
             orbit.target.y += 0.5;
             orbit.object.position.copy(orbit.target);
+
+            orbit.object.position.x += -3;
             orbit.object.position.y += 1;
             orbit.object.position.z += 5;
+
+            orbit.object.position.y -= 1;
+            orbit.target.y -= 1;
           }
         }}
       ></OrbitControls>
+
       {/*  */}
     </group>
   );
@@ -137,13 +219,18 @@ function AvatarLayer() {
     setup();
   }, []);
 
-  let goPlayGame = () => {
+  //
+  let goPlayGame = ({ refURL = null }) => {
     onReady().then(({ user, db, app }) => {
-      db.ref(`profiles/${user.uid}`).set({
-        avatarURL: `/chibi/ChibiBase-rigged.fbx`,
-        avatarSignature: getID(),
-        avatarTextureURL: ``,
-      });
+      db.ref(`profiles/${user.uid}/avatarURL`).set(
+        `/chibi/ChibiBase-rigged.fbx`
+      );
+      db.ref(`profiles/${user.uid}/avatarSignature`).set(getID());
+
+      if (refURL !== null) {
+        db.ref(`profiles/${user.uid}/avatarTextureRefURL`).set(refURL);
+      }
+
       router.push("/room/loklok");
     });
   };
@@ -204,7 +291,9 @@ function AvatarLayer() {
             className={
               "p-3 inline-flex justify-start items-center cursor-pointer"
             }
-            onClick={goPlayGame}
+            onClick={() => {
+              goPlayGame({ refURL: null });
+            }}
           >
             Done
           </div>
@@ -214,7 +303,7 @@ function AvatarLayer() {
       <div className="w-full" style={{ height: `calc(100% - 50px)` }}>
         <AvatarChooser
           //
-          onReady={(link) => {
+          goReady={(link) => {
             // let profileID = getProfileID();
             // let data = getProfileData({ profileID });
             // data.avatarURL = link;
@@ -236,7 +325,20 @@ function AvatarLayer() {
 
             setLoading(true);
 
-            goPlayGame();
+            goPlayGame({ refURL: link });
+
+            /*
+
+            let refURL = v.data.refURL;
+            onReady().then(({ user, db, app }) => {
+              db.ref(`profiles/${user.uid}`).set({
+                avatarURL: `/chibi/ChibiBase-rigged.fbx`,
+                avatarSignature: getID(),
+                avatarTextureRefURL: refURL,
+              });
+              // router.push("/room/loklok");
+            });
+            */
 
             // getFire().database.ref('players/' + FBStore.user.uid)
           }}

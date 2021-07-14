@@ -1,18 +1,24 @@
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/database";
+import "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB-tfIbfq6okbv1tYReo585t_r4zFvf-rI",
   authDomain: "effectnode.firebaseapp.com",
   databaseURL: "https://sharing-jesus-church.firebaseio.com/",
   projectId: "effectnode",
-  storageBucket: "effectnode.appspot.com",
+  storageBucket: "gs://sharing-jesus",
   messagingSenderId: "316567530740",
   appId: "1:316567530740:web:765ff986a897b0e05242a1",
 };
 
 export { firebase };
+
+export const getFire = () => {
+  setup();
+  return firebase;
+};
 
 export const FireCache = new Map();
 export function setup() {

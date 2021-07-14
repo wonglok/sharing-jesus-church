@@ -32,7 +32,6 @@ import { setup, firebase } from "./AppFirebase";
 // import { Debug, Physics, useConvexPolyhedron } from "@react-three/cannon";
 // import { Grapes } from "../Game3D/MapBubbles";
 // import { sRGBEncoding } from "three";
-import { CameraRigOrbit } from "./CameraRigOrbit";
 import { Now } from "./Now";
 // import { ShaderCubeChrome } from "../Shaders/ShaderCubeChrome";
 // import { ENRuntime } from "../ENCloudSDK/ENRuntime";
@@ -41,8 +40,11 @@ import { ENMini } from "../vfx-runtime/ENMini";
 // import { WiggleTrackerObject } from "../ENBatteries/museum/loklok";
 import { CameraRig } from "./CameraRig";
 import { RepeatWrapping } from "three";
-import { CameraRigOrbitBirdView } from "./CameraRigOrbitBirdView";
 import { Sphere } from "@react-three/drei";
+
+//
+import { CameraRigOrbit } from "./CameraRigOrbit";
+import { CameraRigOrbitBirdView } from "./CameraRigOrbitBirdView";
 
 function MapFloor() {
   let { gl, scene } = useThree();
