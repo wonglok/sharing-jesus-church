@@ -644,7 +644,7 @@ export function GameDataReceiver() {
           Now.user = user;
         } else if (!snap || !profile) {
           //
-          router.push("/avatar");
+          router.push("/");
         }
       });
     });

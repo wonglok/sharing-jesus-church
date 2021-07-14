@@ -165,26 +165,27 @@ function Chibi() {
   }, []);
 
   //
-  useEffect((s) => {
-    if (s) {
-      let { camera } = s;
+  // useEffect((s) => {
+  //   if (s) {
+  //     let { camera } = s;
 
-      let head = chibi.getObjectByName("mixamorigHead");
-      if (head) {
-        head.getWorldPosition(camera.position);
-        camera.position.z -= 5;
-        camera.lookAt(
-          camera.position.x,
-          camera.position.y + 15,
-          camera.position.z - 5
-        );
-      }
-    }
+  //     let head = chibi.getObjectByName("mixamorigHead");
+  //     if (head) {
+  //       head.getWorldPosition(camera.position);
+  //       camera.position.z -= 5;
+  //       camera.lookAt(
+  //         camera.position.x,
+  //         camera.position.y + 15,
+  //         camera.position.z - 5
+  //       );
+  //     }
+  //   }
 
-    return () => {
-      //
-    };
-  }, []);
+  //   return () => {
+  //     //
+  //   };
+  // }, []);
+
   return (
     <group>
       <ambientLight intensity={0.15} />
@@ -210,10 +211,12 @@ function Chibi() {
         scale={0.0075}
         object={chibi}
       ></primitive>
+
       <OrbitControls
-        onUpdate={(orbit) => {
+        ref={(orbit) => {
           let head = chibi.getObjectByName("mixamorigHead");
-          if (head) {
+          if (orbit && head && !orbit.configrued) {
+            orbit.configrued = true;
             head.getWorldPosition(orbit.target);
             orbit.target.y += 0.5;
             orbit.object.position.copy(orbit.target);
