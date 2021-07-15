@@ -4,33 +4,19 @@ import {
   useCubeTexture,
   useFBX,
   useGLTF,
+  useTexture,
 } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { EnvMap } from "./EnvMap";
 import {
-  //
   SelfDataEmitter,
   GameDataReceiver,
   MainAvatarLoader,
   MapSimulation,
-  // NoBloomRenderLoop,
   DisplayOtherUsers,
 } from "./UseCases";
-import {
-  BackSide,
-  Color,
-  CubeReflectionMapping,
-  CubeRefractionMapping,
-  DoubleSide,
-  FrontSide,
-  Mesh,
-  MeshStandardMaterial,
-  PCFSoftShadowMap,
-  PlaneGeometry,
-  PointLight,
-  ShadowMaterial,
-} from "three";
+import { Color, DoubleSide, MeshBasicMaterial } from "three";
 
 import { useFrame, useThree } from "@react-three/fiber";
 // import { CameraRig } from "./CameraRig";
@@ -46,82 +32,45 @@ import { ENMini } from "../vfx-runtime/ENMini";
 // import { WiggleTrackerObject } from "../ENBatteries/museum/loklok";
 // import { CameraRig } from "./CameraRig";
 // import { RepeatWrapping } from "three";
-import { Sphere } from "@react-three/drei";
+// import { Sphere } from "@react-three/drei";
 import { LightExpress, ShadowFloor } from "./ShadowLighting";
 
 //
+// import { ShaderCubeChromeGlass } from "../vfx-library/ShaderCubeChromeGlass";
+//
 // import { CameraRigOrbit } from "./CameraRigOrbit";
 // import { CameraRigOrbitBirdView } from "./CameraRigOrbitBirdView";
+//
+
 import { CameraRigChurch } from "./CameraRigChurch";
+import { RainbowFly } from "./RainbowFly";
+
+function Background({}) {
+  let texture = useTexture(`/texture/church-glass.jpg`);
+
+  return (
+    <group scale={13} position-y={100} position-z={-1500}>
+      <mesh frustumCulled={false} rotation-x={Math.PI * -0.5 * 0.0}>
+        <planeBufferGeometry args={[100, 100, 24]}></planeBufferGeometry>
+        <meshBasicMaterial
+          // color={"red"}
+          map={texture}
+          side={DoubleSide}
+        ></meshBasicMaterial>
+      </mesh>
+    </group>
+  );
+}
+
 function MapFloor() {
   let { gl, scene } = useThree();
 
-  //
-  let list = ["px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png"];
-  const cubeMap = useCubeTexture(list, { path: "/cubemaps/galaxy/" });
-
-  // const ball = useTexture(`/texture/ball.jpg`);
-  // ball.wrapS = RepeatWrapping;
-  // ball.wrapT = RepeatWrapping;
-  // ball.repeat.x = 1 * 2;
-  // ball.repeat.y = 2 * 2;
-  // ball.needsUpdate = true;
-
-  // const px = useTexture(`/cubemaps/galaxy/px.png`);
-
-  // const envMap = useMemo(() => {
-  //   const pmremGenerator = new PMREMGenerator(gl);
-  //   pmremGenerator.compileEquirectangularShader();
-  //   let envMap = pmremGenerator.fromEquirectangular(ball).texture;
-  //   envMap.encoding = sRGBEncoding;
-  //   return envMap;
-  // }, []);
-
-  // /map/multitudes.glb
-
-  useEffect(() => {
-    scene.background = cubeMap;
-    return () => {
-      scene.background = null;
-    };
-  });
-
-  //   let rainbow = new ShaderCubeChrome({
-  //     renderer: gl,
-  //     res: 64,
-  //     color: new Color("#ffffff"),
-  //   });
-
-  //   rainbow.compute({ time: 0.4 });
-  //   return rainbow;
-  // });
-
-  cubeMap.mapping = CubeRefractionMapping;
-  cubeMap.mapping = CubeReflectionMapping;
-
-  // public/church/holy-cross.fbx
-
-  // useEffect(() => {
-  //   // scene.background = cubeMap;
-  // }, [cubeMap]);
-
   let map = useGLTF("/map/cahterdral.glb");
-  // map.scene = map;
-
-  // let matcapSilverA = useTexture(`/texture/detection.png`);
-
-  // useEffect(() => {
-  //   scene.add(newFloor);
-
-  //   return () => {
-  //     scene.remove(newFloor);
-  //   };
-  // }, []);
 
   let { floor } = useMemo(() => {
     let src = SkeletonUtils.clone(map.scene);
 
-    src.scale.set(20, 20, 20);
+    src.scale.set(10, 10, 10);
     // src.rotation.y = Math.PI * 0.25;
 
     src.position.y = -2;
@@ -130,13 +79,16 @@ function MapFloor() {
         // item.receiveShadow = true;
         // item.castShadow = true;
 
-        item.material = new MeshStandardMaterial({
-          roughness: 1,
-          metalness: 0.0,
-          side: DoubleSide,
-          flatShading: true,
-          color: new Color("#999999"),
-        });
+        if (item.name !== "Plane") {
+          item.userData.useRainbow = true;
+
+          item.material = new MeshBasicMaterial({
+            side: DoubleSide,
+            flatShading: false,
+          });
+        }
+
+        //
       }
     });
 
@@ -167,7 +119,9 @@ function MapFloor() {
       {floor && (
         <>
           <primitive object={floor}></primitive>
-
+          <Suspense>
+            <Background></Background>
+          </Suspense>
           <MapSimulation
             startAt={startAt}
             debugCollider={false}
@@ -203,6 +157,8 @@ function MapFloor() {
               <DisplayOtherUsers></DisplayOtherUsers>
             </Suspense>
           </Suspense>
+
+          <RainbowFly></RainbowFly>
 
           <LightExpress></LightExpress>
           <ShadowFloor></ShadowFloor>
@@ -339,9 +295,11 @@ export function MapScene() {
       ></directionalLight>
 
       <Suspense fallback={null}>
+        {/* <gridHelper args={[1000, 100, "white", "white"]}></gridHelper> */}
+
         <EnvMap></EnvMap>
         <MapFloor></MapFloor>
-        <group position-z={-80} position-y={35}>
+        <group position-z={-30} position-y={30}>
           {/* <Floating> */}
           <Cross></Cross>
           {/* </Floating> */}
