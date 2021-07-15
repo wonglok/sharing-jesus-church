@@ -10,7 +10,7 @@ import { SkeletonUtils } from "three-stdlib";
 import { EnvMap } from "./EnvMap";
 import {
   //
-  DataEmitter,
+  SelfDataEmitter,
   GameDataReceiver,
   MainAvatarLoader,
   MapSimulation,
@@ -154,7 +154,7 @@ function MapFloor() {
             debugCollider={false}
             floor={floor}
           ></MapSimulation>
-          <DataEmitter></DataEmitter>
+          <SelfDataEmitter></SelfDataEmitter>
 
           <Suspense fallback={null}>
             <MainAvatarLoader></MainAvatarLoader>

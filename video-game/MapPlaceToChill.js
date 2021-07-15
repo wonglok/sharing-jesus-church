@@ -9,7 +9,7 @@ import { SkeletonUtils } from "three-stdlib";
 import { EnvMap } from "./EnvMap";
 import {
   //
-  DataEmitter,
+  SelfDataEmitter,
   GameDataReceiver,
   MainAvatarLoader,
   MapSimulation,
@@ -45,6 +45,7 @@ import { Sphere } from "@react-three/drei";
 //
 import { CameraRigOrbit } from "./CameraRigOrbit";
 import { CameraRigOrbitBirdView } from "./CameraRigOrbitBirdView";
+import { LightExpress, ShadowFloor } from "./ShadowLighting";
 
 function MapFloor() {
   let { gl, scene } = useThree();
@@ -180,11 +181,11 @@ function MapFloor() {
             debugCollider={false}
             floor={floor}
           ></MapSimulation>
-          <DataEmitter></DataEmitter>
+          <SelfDataEmitter></SelfDataEmitter>
 
           <group position-y={5}>
             <Floating>
-              <pointLight
+              {/* <pointLight
                 position-y={30}
                 distance={1200}
                 color={`#555555`}
@@ -199,7 +200,7 @@ function MapFloor() {
                 shadow-camera-right={250}
                 shadow-mapSize-x={512}
                 shadow-mapSize-y={512}
-              ></pointLight>
+              ></pointLight> */}
 
               {/* <Sphere
                 onUpdate={(s) => {
@@ -213,6 +214,7 @@ function MapFloor() {
                   color="#777777"
                 ></meshBasicMaterial>
               </Sphere> */}
+              <LightExpress lightPosition={[0, 30, 0]}></LightExpress>
             </Floating>
           </group>
 

@@ -541,7 +541,7 @@ export function getRoomID() {
   return roomID;
 }
 
-export function DataEmitter() {
+export function SelfDataEmitter() {
   // let DBRef = false;
   // useEffect(() => {
   //   onReady().then(({ db, user }) => {
@@ -745,23 +745,23 @@ export let filePipe = (onlineURL) => {
   return download(FileLoader, onlineURL);
 };
 
-let loadAssets = async ({ avatarURL, avatarSignature }) => {
-  let [
-    //
-    avatar,
-    running,
-    standing,
-  ] = await Promise.all([
-    fbxPipe(avatarURL, avatarSignature).then((a) => {
-      a.scene = a;
-      return a;
-    }),
-    fbxPipe("/chibi/actions-for-this/contorls/running-in-place-relax.fbx"),
-    fbxPipe("/chibi/actions-for-this/contorls/idle-breathing.fbx"),
-  ]);
+// let loadAssets = async ({ avatarURL, avatarSignature }) => {
+//   let [
+//     //
+//     avatar,
+//     running,
+//     standing,
+//   ] = await Promise.all([
+//     fbxPipe(avatarURL, avatarSignature).then((a) => {
+//       a.scene = a;
+//       return a;
+//     }),
+//     fbxPipe("/chibi/actions-for-this/contorls/running-in-place-relax.fbx"),
+//     fbxPipe("/chibi/actions-for-this/contorls/idle-breathing.fbx"),
+//   ]);
 
-  return { avatar, running, standing };
-};
+//   return { avatar, running, standing };
+// };
 
 export function OtherAvatarDisplay({ uid, roomID }) {
   let mixer = useRef();

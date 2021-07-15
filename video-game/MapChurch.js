@@ -1,11 +1,11 @@
 import {
-  useBVH,
+  // useBVH,
+  // useFBX,
   useCubeTexture,
   useFBX,
   useGLTF,
-  useTexture,
 } from "@react-three/drei";
-import { Suspense, useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { EnvMap } from "./EnvMap";
 import {
@@ -14,25 +14,22 @@ import {
   GameDataReceiver,
   MainAvatarLoader,
   MapSimulation,
-  NoBloomRenderLoop,
+  // NoBloomRenderLoop,
   DisplayOtherUsers,
 } from "./UseCases";
 import {
-  CubeReflectionMapping,
-  MeshBasicMaterial,
-
-  //
-  CubeRefractionMapping,
-  MeshLambertMaterial,
-  Object3D,
-  PMREMGenerator,
-  MeshMatcapMaterial,
-  MeshPhongMaterial,
-  DoubleSide,
-  Vector2,
-  MeshStandardMaterial,
+  BackSide,
   Color,
-  Vector3,
+  CubeReflectionMapping,
+  CubeRefractionMapping,
+  DoubleSide,
+  FrontSide,
+  Mesh,
+  MeshStandardMaterial,
+  PCFSoftShadowMap,
+  PlaneGeometry,
+  PointLight,
+  ShadowMaterial,
 } from "three";
 
 import { useFrame, useThree } from "@react-three/fiber";
@@ -41,16 +38,21 @@ import { setup, firebase } from "./AppFirebase";
 // import { Debug, Physics, useConvexPolyhedron } from "@react-three/cannon";
 // import { Grapes } from "../Game3D/MapBubbles";
 // import { sRGBEncoding } from "three";
-// import { CameraRigOrbit } from "./CameraRigOrbit";
 import { Now } from "./Now";
 // import { ShaderCubeChrome } from "../Shaders/ShaderCubeChrome";
 // import { ENRuntime } from "../ENCloudSDK/ENRuntime";
-import { Bloomer } from "../vfx-library/Bloomer";
+import { Bloomer, enableBloom } from "../vfx-library/Bloomer";
 import { ENMini } from "../vfx-runtime/ENMini";
 // import { WiggleTrackerObject } from "../ENBatteries/museum/loklok";
-import { CameraRig } from "./CameraRig";
-import { RepeatWrapping } from "three";
+// import { CameraRig } from "./CameraRig";
+// import { RepeatWrapping } from "three";
+import { Sphere } from "@react-three/drei";
+import { LightExpress, ShadowFloor } from "./ShadowLighting";
 
+//
+// import { CameraRigOrbit } from "./CameraRigOrbit";
+// import { CameraRigOrbitBirdView } from "./CameraRigOrbitBirdView";
+import { CameraRigChurch } from "./CameraRigChurch";
 function MapFloor() {
   let { gl, scene } = useThree();
 
@@ -58,12 +60,12 @@ function MapFloor() {
   let list = ["px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png"];
   const cubeMap = useCubeTexture(list, { path: "/cubemaps/galaxy/" });
 
-  const ball = useTexture(`/texture/ball.jpg`);
-  ball.wrapS = RepeatWrapping;
-  ball.wrapT = RepeatWrapping;
-  ball.repeat.x = 1 * 2;
-  ball.repeat.y = 2 * 2;
-  ball.needsUpdate = true;
+  // const ball = useTexture(`/texture/ball.jpg`);
+  // ball.wrapS = RepeatWrapping;
+  // ball.wrapT = RepeatWrapping;
+  // ball.repeat.x = 1 * 2;
+  // ball.repeat.y = 2 * 2;
+  // ball.needsUpdate = true;
 
   // const px = useTexture(`/cubemaps/galaxy/px.png`);
 
@@ -97,58 +99,68 @@ function MapFloor() {
   cubeMap.mapping = CubeRefractionMapping;
   cubeMap.mapping = CubeReflectionMapping;
 
+  // public/church/holy-cross.fbx
+
   // useEffect(() => {
   //   // scene.background = cubeMap;
   // }, [cubeMap]);
 
-  let map = useGLTF("/map/multitudes.glb");
+  let map = useGLTF("/map/cahterdral.glb");
+  // map.scene = map;
 
   // let matcapSilverA = useTexture(`/texture/detection.png`);
 
-  let floor = useMemo(() => {
-    let environment = SkeletonUtils.clone(map.scene);
-    environment.scale.set(1, 1, 1);
-    environment.rotation.y = Math.PI * 0.0;
+  // useEffect(() => {
+  //   scene.add(newFloor);
 
-    environment.position.y = -2;
-    environment.traverse((item) => {
-      // remove from floor
-      // if (item && item.geometry) {
-      //   if (item.name === "SWIMMING_POOL_WATER" && item.parent) {
-      //     item.parent.remove(item);
-      //   }
-      // }
+  //   return () => {
+  //     scene.remove(newFloor);
+  //   };
+  // }, []);
 
+  let { floor } = useMemo(() => {
+    let src = SkeletonUtils.clone(map.scene);
+
+    src.scale.set(20, 20, 20);
+    // src.rotation.y = Math.PI * 0.25;
+
+    src.position.y = -2;
+    src.traverse((item) => {
       if (item.material) {
-        // rainbow.out.envMap.mapping = CubeRefractionMapping;
-        // rainbow.out.texture.repeat.x = 0.1;
-        // rainbow.out.texture.repeat.y = 0.1;
+        // item.receiveShadow = true;
+        // item.castShadow = true;
 
-        item.material = new MeshBasicMaterial({
+        item.material = new MeshStandardMaterial({
+          roughness: 1,
+          metalness: 0.0,
           side: DoubleSide,
-          // envMap: cubeMap,
-          // map: px,
-          map: ball,
-          // map: rainbow.out.texture,
+          flatShading: true,
+          color: new Color("#999999"),
         });
       }
     });
 
-    return environment;
+    return { floor: src };
   }, []);
 
+  //
+
+  let startAt = {
+    x: 0.45129372677891655,
+    y: 0,
+    z: 68.12215458593136,
+  };
+
+  useFrame(() => {
+    if (floor) {
+      floor.getObjectByName("door");
+    }
+  });
+
   useEffect(() => {
-    Now.avatarAt.copy({
-      x: 0,
-      y: 0,
-      z: -2.2145418656525635,
-    });
-    Now.goingTo.copy({
-      x: 0,
-      y: 0,
-      z: -2.2145418656525635,
-    });
-  }, []);
+    Now.avatarAt.copy(startAt);
+    Now.goingTo.copy(startAt);
+  }, [startAt]);
 
   return (
     <>
@@ -157,15 +169,29 @@ function MapFloor() {
           <primitive object={floor}></primitive>
 
           <MapSimulation
-            startAt={{
-              x: 0,
-              y: 0,
-              z: -2.2145418656525635,
-            }}
+            startAt={startAt}
             debugCollider={false}
             floor={floor}
           ></MapSimulation>
+
           <SelfDataEmitter></SelfDataEmitter>
+
+          <group position-y={5}>
+            <Floating>
+              {/* <Sphere
+                onUpdate={(s) => {
+                  enableBloom(s);
+                }}
+                args={[3, 32, 32]}
+              >
+                <meshBasicMaterial
+                  transparent={true}
+                  opacity={0.5}
+                  color="#777777"
+                ></meshBasicMaterial>
+              </Sphere> */}
+            </Floating>
+          </group>
 
           <Suspense fallback={null}>
             <MainAvatarLoader></MainAvatarLoader>
@@ -177,10 +203,29 @@ function MapFloor() {
               <DisplayOtherUsers></DisplayOtherUsers>
             </Suspense>
           </Suspense>
+
+          <LightExpress></LightExpress>
+          <ShadowFloor></ShadowFloor>
         </>
       )}
     </>
   );
+}
+
+function Floating({ children }) {
+  let ref = useRef();
+  useEffect(() => {
+    //
+  }, []);
+  let time = 0;
+  useFrame((st, dt) => {
+    if (dt >= 1 / 60) {
+      dt = 1 / 60;
+    }
+    time += dt;
+    ref.current.position.y = Math.sin(time) * 5.0;
+  });
+  return <group ref={ref}>{children}</group>;
 }
 
 // let loadBattriesInFolder = () => {
@@ -271,26 +316,62 @@ export function MapScene() {
 
   return (
     <>
-      <CameraRig></CameraRig>
-      {/* <CameraRigOrbit></CameraRigOrbit> */}
+      <CameraRigChurch></CameraRigChurch>
+      {/* <CameraRigOrbitBirdView></CameraRigOrbitBirdView> */}
 
       <Bloomer></Bloomer>
       {/* <NoBloomRenderLoop></NoBloomRenderLoop> */}
-
+      {/*
       <directionalLight
         intensity={0.7}
         position={[10, 10, 10]}
       ></directionalLight>
+ */}
 
       <directionalLight
-        intensity={0.7}
-        position={[-10, 10, 10]}
+        intensity={0.15}
+        position={[0, 10, 0]}
+      ></directionalLight>
+
+      <directionalLight
+        intensity={0.15}
+        position={[-10, 10, 0]}
       ></directionalLight>
 
       <Suspense fallback={null}>
         <EnvMap></EnvMap>
         <MapFloor></MapFloor>
+        <group position-z={-80} position-y={35}>
+          {/* <Floating> */}
+          <Cross></Cross>
+          {/* </Floating> */}
+        </group>
       </Suspense>
     </>
+  );
+}
+
+function Cross() {
+  let fbx = useFBX(`/church/holy-cross.fbx`);
+
+  useEffect(() => {
+    fbx.traverse((it) => {
+      if (it.material) {
+        // enableBloom(it);
+        it.castShadow = true;
+        it.material.color = new Color("#121212");
+      }
+    });
+  }, [fbx]);
+  return (
+    <group scale={0.09}>
+      <primitive
+        position-x={-15}
+        position-y={15}
+        rotation-y={Math.PI * (0.25 + 0.5 + 0.1)}
+        rotation-x={Math.PI * -0.5}
+        object={fbx}
+      ></primitive>
+    </group>
   );
 }

@@ -32,6 +32,10 @@ let Pages = [
       import("./MapPlaceToChill.js").then((e) => e.MapScene)
     ),
   },
+  {
+    name: "church",
+    Component: dynamic(() => import("./MapChurch.js").then((e) => e.MapScene)),
+  },
 
   // MapPlaceToChill
 ];
@@ -60,7 +64,6 @@ export function NewGame3D() {
     <div className="w-full h-full">
       {typeof found === "object" && found !== null ? (
         <Canvas
-          shadowMap={PCFSoftShadowMap}
           dpr={
             (typeof window !== "undefined" && window.devicePixelRatio) || 1.0
           }
