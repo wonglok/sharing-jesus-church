@@ -16,18 +16,28 @@ import { Gallery, getURLByRefURL } from "../video-game/Gallery";
 let AvaState = makeShallowStore({
   panel: "",
   avatarTextureRefURL: "",
+  loading: false,
 });
 
 export let setChibiURL = async ({ chibi, refURL }) => {
   if (refURL !== null) {
+    AvaState.loading = true;
     let link = await getURLByRefURL(refURL);
 
     chibi.traverse((k) => {
       if (k.material) {
-        new TextureLoader().load(link, (tex) => {
-          k.material.map = tex;
-          k.material.needsUpdate = true;
-        });
+        new TextureLoader().load(
+          link,
+          (tex) => {
+            k.material.map = tex;
+            k.material.needsUpdate = true;
+            AvaState.loading = false;
+          },
+          () => {},
+          () => {
+            AvaState.loading = false;
+          }
+        );
       }
     });
   } else if (refURL === "") {
@@ -186,10 +196,23 @@ function Chibi() {
   //   };
   // }, []);
 
+  AvaState.makeKeyReactive("loading");
+
   return (
     <group>
       <ambientLight intensity={0.15} />
       <pointLight position={[0, 130, 100]}></pointLight>
+
+      {AvaState.loading && (
+        <Text
+          fontSize={0.5}
+          font={`/font/Cronos-Pro-Light_12448.ttf`}
+          color="#232323"
+          position-y={5.5}
+        >
+          Loading Clothes...
+        </Text>
+      )}
 
       <Text
         fontSize={0.5}
