@@ -19,6 +19,8 @@ let AvaState = makeShallowStore({
   loading: false,
 });
 
+// /texture/waternormals-works.jpg
+
 export let setChibiURL = async ({ chibi, refURL }) => {
   if (refURL !== null) {
     AvaState.loading = true;
@@ -102,6 +104,10 @@ function AvatarChooser({
 
       {AvaState.panel === "gallery" && (
         <Gallery
+          onClose={(v) => {
+            //
+            AvaState.panel = "";
+          }}
           onPick={(v) => {
             let refURL = v.data.refURL;
             AvaState.avatarTextureRefURL = refURL;
@@ -205,7 +211,7 @@ function Chibi() {
 
       {AvaState.loading && (
         <Text
-          fontSize={0.5}
+          fontSize={0.2}
           font={`/font/Cronos-Pro-Light_12448.ttf`}
           color="#232323"
           position-y={5.5}

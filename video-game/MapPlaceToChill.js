@@ -3,6 +3,7 @@ import {
   // useFBX,
   useCubeTexture,
   useFBX,
+  useTexture,
 } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import { SkeletonUtils } from "three-stdlib";
@@ -102,6 +103,9 @@ function MapFloor() {
   let map = useFBX("/map/place-to-chill.fbx");
   map.scene = map;
 
+  let waterdudv = useTexture(`/texture/waternormals-works.jpg`);
+  waterdudv.repeat.set(1, 1);
+
   // let matcapSilverA = useTexture(`/texture/detection.png`);
 
   // useEffect(() => {
@@ -121,12 +125,11 @@ function MapFloor() {
     src.position.y = -2;
     src.traverse((item) => {
       if (item.material) {
-        item.receiveShadow = true;
         item.castShadow = true;
 
         item.material = new MeshStandardMaterial({
-          roughness: 1,
-          metalness: 0.0,
+          roughness: 0.0,
+          metalness: 1.0,
           side: DoubleSide,
           flatShading: true,
           color: new Color("#999999"),
@@ -135,15 +138,23 @@ function MapFloor() {
         console.log(item.name);
         if (item.name === "Circle") {
           //
+          item.material.roughness = 1.0;
           item.material.side = FrontSide;
+          item.receiveShadow = true;
+          item.scale.set(150, 150, 150);
+          item.material.normalMap = waterdudv;
         }
 
         if (item.name === "door") {
           item.userData.skipFloorGen = true;
+          item.material.color = new Color("#555555");
+          enableBloom(item);
         }
 
         if (item.name === "pillar-screw") {
           item.userData.skipFloorGen = true;
+          item.material.color = new Color("#444444");
+          enableBloom(item);
         }
       }
     });
@@ -372,14 +383,31 @@ function Cross() {
 
   useEffect(() => {
     fbx.traverse((it) => {
+      if (it.name === "BezierCurve") {
+        it.visible = false;
+      }
+    });
+  });
+
+  //
+  let waterdudv = useTexture(`/texture/waternormals-works.jpg`);
+  waterdudv.repeat.set(1, 1);
+
+  useEffect(() => {
+    fbx.traverse((it) => {
       if (it.material) {
-        // enableBloom(it);
-        it.material.color = new Color("#121212");
+        enableBloom(it);
+        it.material = new MeshStandardMaterial({
+          roughness: 0.3,
+          metalness: 1,
+          normalMap: waterdudv,
+        });
+        it.material.color = new Color("#777777");
       }
     });
   }, [fbx]);
   return (
-    <group scale={0.09}>
+    <group scale={0.08}>
       <primitive
         position-x={-15}
         position-y={15}

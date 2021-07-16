@@ -23,7 +23,7 @@ export const getURLByRefURL = async (refURL) => {
   return await fireRef.getDownloadURL();
 };
 
-export function Gallery({ onPick = () => {} }) {
+export function Gallery({ onPick = () => {}, onClose = () => {} }) {
   return (
     <div
       className="absolute left-0 top-0 w-full overflow-scroll bg-yellow-100"
@@ -44,6 +44,7 @@ export function Gallery({ onPick = () => {} }) {
             clipRule="evenodd"
             onClick={() => {
               CState.panel = "";
+              onClose();
             }}
           >
             <path d="M12 11.293l10.293-10.293.707.707-10.293 10.293 10.293 10.293-.707.707-10.293-10.293-10.293 10.293-.707-.707 10.293-10.293-10.293-10.293.707-.707 10.293 10.293z" />
