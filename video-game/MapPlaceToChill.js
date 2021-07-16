@@ -51,28 +51,8 @@ import { LightExpress, ShadowFloor } from "./ShadowLighting";
 function MapFloor() {
   let { gl, scene } = useThree();
 
-  //
   let list = ["px.png", "nx.png", "py.png", "ny.png", "pz.png", "nz.png"];
   const cubeMap = useCubeTexture(list, { path: "/cubemaps/galaxy/" });
-
-  // const ball = useTexture(`/texture/ball.jpg`);
-  // ball.wrapS = RepeatWrapping;
-  // ball.wrapT = RepeatWrapping;
-  // ball.repeat.x = 1 * 2;
-  // ball.repeat.y = 2 * 2;
-  // ball.needsUpdate = true;
-
-  // const px = useTexture(`/cubemaps/galaxy/px.png`);
-
-  // const envMap = useMemo(() => {
-  //   const pmremGenerator = new PMREMGenerator(gl);
-  //   pmremGenerator.compileEquirectangularShader();
-  //   let envMap = pmremGenerator.fromEquirectangular(ball).texture;
-  //   envMap.encoding = sRGBEncoding;
-  //   return envMap;
-  // }, []);
-
-  // /map/multitudes.glb
 
   useEffect(() => {
     scene.background = cubeMap;
@@ -81,40 +61,16 @@ function MapFloor() {
     };
   });
 
-  //   let rainbow = new ShaderCubeChrome({
-  //     renderer: gl,
-  //     res: 64,
-  //     color: new Color("#ffffff"),
-  //   });
-
-  //   rainbow.compute({ time: 0.4 });
-  //   return rainbow;
-  // });
-
   cubeMap.mapping = CubeRefractionMapping;
   cubeMap.mapping = CubeReflectionMapping;
-
-  // public/church/holy-cross.fbx
-
-  // useEffect(() => {
-  //   // scene.background = cubeMap;
-  // }, [cubeMap]);
 
   let map = useFBX("/map/place-to-chill.fbx");
   map.scene = map;
 
   let waterdudv = useTexture(`/texture/waternormals-works.jpg`);
-  waterdudv.repeat.set(1, 1);
-
-  // let matcapSilverA = useTexture(`/texture/detection.png`);
-
-  // useEffect(() => {
-  //   scene.add(newFloor);
-
-  //   return () => {
-  //     scene.remove(newFloor);
-  //   };
-  // }, []);
+  waterdudv.repeat.set(3, 3);
+  waterdudv.wrapS = RepeatWrapping;
+  waterdudv.wrapT = RepeatWrapping;
 
   let { floor } = useMemo(() => {
     let src = SkeletonUtils.clone(map.scene);
@@ -139,7 +95,7 @@ function MapFloor() {
           item.material.roughness = 1.0;
           item.material.side = FrontSide;
           item.receiveShadow = true;
-          item.scale.set(150, 150, 150);
+          item.scale.set(75, 75, 75);
           item.material.normalMap = waterdudv;
         }
 
@@ -199,35 +155,6 @@ function MapFloor() {
 
           <group position-y={5}>
             <Floating>
-              {/* <pointLight
-                position-y={30}
-                distance={1200}
-                color={`#555555`}
-                castShadow={true}
-                intensity={10}
-                shadow-radius={3.5}
-                shadow-camera-near={0.1}
-                shadow-camera-far={250}
-                shadow-camera-top={250}
-                shadow-camera-bottom={-250}
-                shadow-camera-left={-250}
-                shadow-camera-right={250}
-                shadow-mapSize-x={512}
-                shadow-mapSize-y={512}
-              ></pointLight> */}
-
-              {/* <Sphere
-                onUpdate={(s) => {
-                  enableBloom(s);
-                }}
-                args={[3, 32, 32]}
-              >
-                <meshBasicMaterial
-                  transparent={true}
-                  opacity={0.5}
-                  color="#777777"
-                ></meshBasicMaterial>
-              </Sphere> */}
               <LightExpress lightPosition={[0, 30, 0]}></LightExpress>
             </Floating>
           </group>
@@ -263,43 +190,6 @@ function Floating({ children }) {
   });
   return <group ref={ref}>{children}</group>;
 }
-
-// let loadBattriesInFolder = () => {
-//   let enBatteries = [];
-//   let reqq = require.context(
-//     "../../pages-code/ENBatteries/",
-//     true,
-//     /\.js$/,
-//     "lazy"
-//   );
-
-//   let keys = reqq.keys();
-
-//   keys.forEach((key) => {
-//     let title = key;
-
-//     title = title.replace("./", "");
-//     title = title.replace("/", ".");
-//     title = title.replace(".js", "");
-
-//     if (title.indexOf(".index") !== -1) {
-//       return;
-//     }
-
-//     enBatteries.push({
-//       title,
-//       effect: (node) => {
-//         reqq(key).then(({ effect }) => {
-//           if (typeof effect === "function") {
-//             effect(node);
-//           }
-//         });
-//       },
-//     });
-//   });
-
-//   return enBatteries;
-// };
 
 function MyWiggles() {
   let three = useThree();
@@ -353,16 +243,8 @@ export function MapScene() {
   return (
     <>
       <CameraRig></CameraRig>
-      {/* <CameraRigOrbitBirdView></CameraRigOrbitBirdView> */}
 
       <Bloomer></Bloomer>
-      {/* <NoBloomRenderLoop></NoBloomRenderLoop> */}
-      {/*
-      <directionalLight
-        intensity={0.7}
-        position={[10, 10, 10]}
-      ></directionalLight>
- */}
 
       <directionalLight
         intensity={0.3}
@@ -392,25 +274,21 @@ function Cross() {
     });
   });
 
-  //
-  let waterdudv = useTexture(`/texture/waternormals-works.jpg`);
-  waterdudv.repeat.set(1, 1);
-
   useEffect(() => {
     fbx.traverse((it) => {
       if (it.material) {
+        it.castShadow = true;
         enableBloom(it);
         it.material = new MeshStandardMaterial({
           roughness: 0.3,
           metalness: 1,
-          normalMap: waterdudv,
         });
         it.material.color = new Color("#777777");
       }
     });
   }, [fbx]);
   return (
-    <group scale={0.08}>
+    <group position-z={-0.3} rotation-x={Math.PI * -0.05} scale={0.08}>
       <primitive
         position-x={-15}
         position-y={15}
