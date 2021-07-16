@@ -135,9 +135,7 @@ function MapFloor() {
           color: new Color("#999999"),
         });
 
-        console.log(item.name);
         if (item.name === "Circle") {
-          //
           item.material.roughness = 1.0;
           item.material.side = FrontSide;
           item.receiveShadow = true;
@@ -147,13 +145,18 @@ function MapFloor() {
 
         if (item.name === "door") {
           item.userData.skipFloorGen = true;
-          item.material.color = new Color("#555555");
+          item.material.color = new Color("#333333");
           enableBloom(item);
         }
 
         if (item.name === "pillar-screw") {
           item.userData.skipFloorGen = true;
-          item.material.color = new Color("#444444");
+          item.material.color = new Color("#333333");
+          enableBloom(item);
+        }
+        if (item.name === "dome") {
+          item.userData.skipFloorGen = true;
+          item.material.color = new Color("#333333");
           enableBloom(item);
         }
       }
