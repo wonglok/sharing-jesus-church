@@ -36,6 +36,12 @@ let Pages = [
     name: "church",
     Component: dynamic(() => import("./MapChurch.js").then((e) => e.MapScene)),
   },
+  {
+    name: "prism",
+    Component: dynamic(() =>
+      import("./MapStagePrism.js").then((e) => e.MapScene)
+    ),
+  },
 
   // MapPlaceToChill
 ];

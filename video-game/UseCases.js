@@ -32,22 +32,22 @@ import { FileLoader } from "three";
 import router from "next/router";
 import { setChibiURL } from "../pages/avatar";
 
-export const ResourceDB = [
-  {
-    url: "/font/Cronos-Pro-Light_12448.ttf",
-    key: "cronosProFont",
-    preload: true,
-  },
-];
+// export const ResourceDB = [
+//   {
+//     url: "/font/Cronos-Pro-Light_12448.ttf",
+//     key: "cronosProFont",
+//     preload: true,
+//   },
+// ];
 
-export const Assets = new Proxy(
-  {},
-  {
-    get: (obj, key) => {
-      return ResourceDB.find((e) => e.key === key);
-    },
-  }
-);
+// export const Assets = new Proxy(
+//   {},
+//   {
+//     get: (obj, key) => {
+//       return ResourceDB.find((e) => e.key === key);
+//     },
+//   }
+// );
 
 export function MapSimulation({
   //
@@ -787,8 +787,6 @@ export function OtherAvatarDisplay({ uid, roomID }) {
   let standing = useFBX("/chibi/actions-for-this/contorls/idle-breathing.fbx");
 
   const modeRef = useRef();
-
-  //
 
   useEffect(() => {
     mixer.current = new AnimationMixer();

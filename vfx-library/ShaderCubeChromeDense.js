@@ -102,7 +102,7 @@ class CustomWebGLCubeRenderTarget extends WebGLCubeRenderTarget {
   }
 }
 
-export class ShaderCubeChrome {
+export class ShaderCubeChromeDense {
   constructor({ renderer, res = 128, color = new Color("#ffffff") }) {
     // this.onLoop = ctx.onLoop
     // console.log(renderer)
