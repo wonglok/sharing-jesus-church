@@ -28,6 +28,7 @@ export default function IndexPage({ graphA }) {
     <div ref={ref} className="w-full h-full">
       <Canvas
         onCreated={({ gl }) => {
+          //
           getGPUTier({ glContext: gl.getContext() }).then((v) => {
             // ipad
             if (v.gpu === "apple a9x gpu") {

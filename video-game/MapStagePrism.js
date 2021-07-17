@@ -19,18 +19,19 @@ import {
   // NoBloomRenderLoop,
   DisplayOtherUsers,
 } from "./UseCases";
+
 import {
   BackSide,
-  CircleBufferGeometry,
-  Color,
   CubeReflectionMapping,
   CubeRefractionMapping,
-  DoubleSide,
   FrontSide,
+  PlaneBufferGeometry,
+  CircleBufferGeometry,
+  Color,
+  DoubleSide,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
-  PlaneBufferGeometry,
 } from "three";
 
 import { useFrame, useThree } from "@react-three/fiber";
@@ -54,6 +55,7 @@ import { RepeatWrapping } from "three";
 // import { CameraRigOrbitBirdView } from "./CameraRigOrbitBirdView";
 import { LightExpress, ShadowFloor } from "./ShadowLighting";
 import { ShaderCubeChromeDense } from "../vfx-library/ShaderCubeChromeDense";
+import { VolumeVisualiser } from "../vfx-library/VolumeVisualiser";
 
 function MapFloor({ cubeCam }) {
   let { gl, scene } = useThree();
@@ -116,7 +118,7 @@ function MapFloor({ cubeCam }) {
           item.material.metalness = 1;
           item.material.roughness = 0.1;
           item.material.side = DoubleSide;
-          item.scale.set(2, 1, 2);
+          item.scale.set(1, 1, 1);
           item.material.map = rainbow.out.texture;
         }
 
@@ -125,9 +127,10 @@ function MapFloor({ cubeCam }) {
             color: new Color("#ffffff"),
             map: rainbow.out.texture,
             envMap: rainbow.out.envMap,
+            side: DoubleSide,
           });
           item.userData.skipFloorGen = true;
-          item.position.y = -5;
+          item.position.y = 5;
         }
       }
     });
@@ -157,9 +160,13 @@ function MapFloor({ cubeCam }) {
     Now.goingTo.copy(startAt);
   }, [startAt]);
 
+  //
   return (
     <>
-      <primitive object={floor}></primitive>
+      <group>
+        <primitive object={floor}></primitive>
+      </group>
+
       {floor && (
         <>
           {/* <CubeCamera>
@@ -191,8 +198,6 @@ function MapFloor({ cubeCam }) {
           <Suspense fallback={null}>
             <MainAvatarLoader></MainAvatarLoader>
 
-            <MyWiggles></MyWiggles>
-
             <Suspense fallback={null}>
               <GameDataReceiver></GameDataReceiver>
               <DisplayOtherUsers></DisplayOtherUsers>
@@ -221,6 +226,7 @@ function Floating({ children }) {
 }
 
 function MyWiggles() {
+  let ref = useRef();
   let three = useThree();
   let mini = useMemo(() => {
     let engine = new ENMini({});
@@ -238,24 +244,31 @@ function MyWiggles() {
   }, []);
 
   useFrame((st) => {
+    if (ref.current) {
+      mini.set("mounter", ref.current);
+    }
     mini.work();
   });
 
-  // useEffect(() => {
-  //   new WiggleTrackerObject({
-  //     node: mini,
-  //   });
+  useEffect(() => {
+    let api = new VolumeVisualiser({ mini: mini });
+    mini.onLoop(() => {
+      if (api.compute) {
+        api.compute();
+      }
+    });
+    // new WiggleTrackerObject({
+    //   node: mini,
+    // });
+    // let tracker = new Vector3().copy(Now.avatarAt);
+    // mini.onLoop(() => {
+    //   tracker.copy(Now.avatarAt);
+    //   tracker.y += 2.3;
+    // });
+    // mini.set("tracker", tracker);
+  }, [mini]);
 
-  //   let tracker = new Vector3().copy(Now.avatarAt);
-  //   mini.onLoop(() => {
-  //     tracker.copy(Now.avatarAt);
-  //     tracker.y += 2.3;
-  //   });
-
-  //   mini.set("tracker", tracker);
-  // }, []);
-
-  return null;
+  return <group scale={1} ref={ref}></group>;
 }
 
 export function MapScene() {
@@ -272,7 +285,7 @@ export function MapScene() {
   return (
     <>
       <CameraRig></CameraRig>
-
+      <MyWiggles></MyWiggles>
       <Bloomer></Bloomer>
 
       <directionalLight
@@ -281,7 +294,6 @@ export function MapScene() {
       ></directionalLight>
       <Suspense fallback={null}>
         <EnvMap></EnvMap>
-
         <MapFloor></MapFloor>
 
         <group position-y={20}>

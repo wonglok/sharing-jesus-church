@@ -27,12 +27,12 @@ export function RainbowFly() {
 
   useFrame(() => {
     if (refRainbow.current) {
-      let envMap = refRainbow.current.out.envMap;
+      let texture = refRainbow.current.out.texture;
 
       scene.traverse((it) => {
         if (it.material && it.userData.useRainbow && !it.___applied) {
           it.___applied = true;
-          it.material.envMap = envMap;
+          it.material.map = texture;
         }
       });
     }

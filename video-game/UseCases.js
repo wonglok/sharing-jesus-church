@@ -363,7 +363,7 @@ export function MapSimulation({
     // adjust the player model
     player.position.copy(newPosition);
     Now.avatarAt.copy(player.position);
-    Now.avatarAt.y += 0.3;
+    Now.avatarAt.y += 0.1;
 
     rotationCopier.position.copy(player.position);
     rotationCopier.lookAt(

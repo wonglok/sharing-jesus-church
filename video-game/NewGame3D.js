@@ -42,6 +42,12 @@ let Pages = [
       import("./MapStagePrism.js").then((e) => e.MapScene)
     ),
   },
+  {
+    name: "heavenly",
+    Component: dynamic(() =>
+      import("./MapHeavenly.js").then((e) => e.MapScene)
+    ),
+  },
 
   // MapPlaceToChill
 ];
@@ -74,9 +80,9 @@ export function NewGame3D() {
             (typeof window !== "undefined" && window.devicePixelRatio) || 1.0
           }
         >
-          <MyScene>
-            <found.Component></found.Component>
-          </MyScene>
+          {/* <MyScene> */}
+          <found.Component></found.Component>
+          {/* </MyScene> */}
         </Canvas>
       ) : found === null ? (
         <div className="w-full h-full flex items-center justify-center">
