@@ -1,5 +1,5 @@
 import { useFBO, useFBX } from "@react-three/drei";
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { EnvMap } from "./EnvMap";
 import {
@@ -12,6 +12,7 @@ import {
 
 import {
   AdditiveBlending,
+  Camera,
   Color,
   DoubleSide,
   Object3D,
@@ -269,8 +270,7 @@ export function MapScene() {
         </group>
       </Suspense>
 
-      {/* <LookatMeCloud></LookatMeCloud> */}
-      {/* <HeavenlyClouds></HeavenlyClouds> */}
+      <LookatMeCloud></LookatMeCloud>
     </>
   );
 }
@@ -301,71 +301,49 @@ function Cross() {
 }
 
 function LookatMeCloud() {
-  let { camera, scene } = useThree();
-  useEffect(() => {
-    scene.add(camera);
-    return () => {
-      scene.remove(camera);
-    };
-  });
-  return (
-    <group>
-      {createPortal(
-        <group position-z={-1500} scale={30}>
-          <CloudPlane></CloudPlane>
-        </group>,
-        camera
-      )}
-    </group>
-  );
-}
+  let { gl, camera, scene } = useThree();
+  let myScene = useMemo(() => {
+    return new Scene();
+  }, []);
 
-function CloudPlane() {
-  let mesh = useRef();
-  let { camera } = useThree();
+  let myCam = useMemo(() => {
+    return new Camera();
+  }, []);
 
-  let count = 1;
-  useEffect(() => {
-    if (mesh.current) {
-      let o3dt = new Object3D();
-      for (let i = 0; i < count; i++) {
-        o3dt.position.set(0, 0, 0);
-        o3dt.position.z = (i / count) * 2.0 - 1.0;
-        o3dt.position.z *= count;
-        o3dt.updateMatrix();
-        mesh.current.setMatrixAt(i, o3dt.matrix);
+  let mat = useMemo(() => {
+    return new ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        uCamPos: { value: camera.position },
+      },
+      transparent: true,
+      depthWrite: false,
+      // blending: AdditiveBlending,
+      vertexShader: `
+      //
+
+      varying vec2 vUv;
+      varying vec3 vPos;
+      varying vec3 vCamPos;
+      uniform vec3 uCamPos;
+
+      void main (void) {
+        //
+        vec4 iPos = vec4(position, 1.0);
+        gl_Position = projectionMatrix * modelViewMatrix * iPos;
+
+        vCamPos = uCamPos;
+        vPos = iPos.xyz;
+        vUv = uv;
       }
+      `,
 
-      mesh.current.instanceMatrix.needsUpate = true;
-      mesh.current.material = new ShaderMaterial({
-        side: DoubleSide,
-        uniforms: {
-          dir: { value: new Vector3() },
-          count: { value: count },
-          time: { value: 0 },
-        },
-        vertexShader: `
-          //
+      fragmentShader: `
 
-          varying vec2 vUv;
-          varying vec3 vPos;
-          varying vec3 vCamPos;
-
-          void main (void) {
-            //
-            vec4 iPos = instanceMatrix * vec4(position, 1.0);
-            gl_Position = projectionMatrix * modelViewMatrix * iPos;
-
-            vCamPos = cameraPosition;
-            vPos = iPos.xyz;
-            vUv = uv;
-          }
-        `,
-        fragmentShader: `
-          //
-          varying vec3 vPos;
-          uniform float count;
-          varying vec3 vCamPos;
+      uniform float time;
+      varying vec2 vUv;
+      varying vec3 vCamPos;
+      varying vec3 vPos;
 
         //  Simplex 3D Noise
         //  by Ian McEwan, Ashima Arts
@@ -442,8 +420,6 @@ function CloudPlane() {
                                       dot(p2,x2), dot(p3,x3) ) );
         }
 
-          uniform float time;
-          varying vec2 vUv;
 
           float surface3( vec3 coord ){
             float height	= 0.0;
@@ -455,70 +431,85 @@ function CloudPlane() {
             return height;
           }
 
-          vec4 mainImage (float depth, float total) {
+          vec4 mainImage (float depth) {
             vec4 outC = vec4(0.0);
 
-            vec3 coord	= vec3( vUv, vPos.z );
+            vec3 coord	= vec3( vUv, depth );
             coord.x += time * -0.05;
 
             float height	= surface3( coord + (pow(length(vCamPos), 0.7) / 700.0 ) + vec3(0.0, 0.0, depth) );
 
             height = clamp(height, 0.0, 1.0);
-            height = pow(height, 15.0);
+            height = pow(height, 3.5);
 
             outC = vec4(vec3(height), height);
 
             return outC;
           }
 
-          void main( void ) {
-            vec4 colors = vec4(0.0, 0.0, 0.0, 1.0);
+        void main (void) {
+          vec4 cloud = vec4(0.0);
 
-            float z = 0.0;
-            for (int i = 0; i < 5; i++) {
-              vec4 img = mainImage(z / 15.0, 5.0);
-
-              colors.rgba += img.rgba / 10.0;
-
-              z += 1.0;
-            }
-
-            gl_FragColor = colors;
+          for (int i = 0; i < 4;i++) {
+            cloud += mainImage(float(i) / 3.0) / 2.0;
           }
-        `,
-        depthWrite: false,
-        blending: AdditiveBlending,
-        transparent: true,
-      });
-    }
+
+          gl_FragColor = cloud;
+        }
+      `,
+    });
+  });
+  let fbo = useFBO(256, 256);
+
+  useEffect(() => {
+    myCam.position.z = 1;
 
     return () => {};
   });
 
   useFrame((st, dt) => {
-    if (dt >= 1 / 30) {
-      dt = 1 / 30;
-    }
-    if (mesh?.current?.material) {
-      mesh.current.material.uniforms.time.value += dt;
+    dt = dt >= 1 / 30 ? 1 / 30 : dt;
 
-      // mesh.current.lookAt(camera.position);
-      mesh.current.rotation.x = Math.PI * 0.5;
-      mesh.current.rotation.y = 0;
-      mesh.current.rotation.z = 0;
+    mat.uniforms.time.value += dt;
 
-      // dir.applyAxisAngle({ x: 0, y: 1, z: 0 }, Math.PI * 0.5);
-    }
+    let orig = gl.getRenderTarget();
+    gl.setRenderTarget(fbo);
+
+    gl.clear();
+
+    gl.render(myScene, myCam);
+
+    gl.setRenderTarget(orig);
   });
+
+  useEffect(() => {
+    //
+
+    scene.add(camera);
+    return () => {
+      scene.remove(camera);
+    };
+  }); //
   return (
-    <group rotation-x={Math.PI * -0.5} position={[0, -count * 0.5, 0]}>
-      <instancedMesh
-        frustumCulled={false}
-        ref={mesh}
-        args={[undefined, undefined, count]}
-      >
-        <planeBufferGeometry args={[100, 100]}></planeBufferGeometry>
-      </instancedMesh>
+    <group>
+      {createPortal(
+        <mesh material={mat}>
+          <planeBufferGeometry args={[2, 2]}></planeBufferGeometry>
+        </mesh>,
+        myScene
+      )}
+
+      {createPortal(
+        <mesh frustumCulled={false} scale={15} position-z={-1000}>
+          <planeBufferGeometry args={[100, 100]}></planeBufferGeometry>
+          <meshBasicMaterial
+            transparent={true}
+            map={fbo.texture}
+            blending={AdditiveBlending}
+          ></meshBasicMaterial>
+        </mesh>,
+        camera
+      )}
     </group>
   );
 }
