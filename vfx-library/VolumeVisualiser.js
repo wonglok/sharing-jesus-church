@@ -70,7 +70,6 @@ void main()
     };
 
     this.rtTexture = new WebGLRenderTarget(1024, 1024);
-
     this.rtTexture2 = new WebGLRenderTarget(1024, 1024);
 
     this.pass2 = {
@@ -186,23 +185,23 @@ vec2 computeSliceOffset(float slice, float slicesPerRow, vec2 sliceSize) {
                           floor(slice / slicesPerRow));
 }
 
-vec4 scan3DTextureValue (
-    sampler2D tex, vec3 texCoord, float size, float numRows, float slicesPerRow) {
-  float slice   = texCoord.z * size;
-  float sliceZ  = floor(slice);                         // slice we need
-  float zOffset = fract(slice);                         // dist between slices
-  vec2 sliceSize = vec2(1.0 / slicesPerRow,             // u space of 1 slice
-                        1.0 / numRows);                 // v space of 1 slice
-  vec2 slice0Offset = computeSliceOffset(sliceZ, slicesPerRow, sliceSize);
-  vec2 slice1Offset = computeSliceOffset(sliceZ + 1.0, slicesPerRow, sliceSize);
-  vec2 slicePixelSize = sliceSize / size;               // space of 1 pixel
-  vec2 sliceInnerSize = slicePixelSize * (size - 1.0);  // space of size pixels
-  vec2 uv = slicePixelSize * 0.5 + texCoord.xy * sliceInnerSize;
-  vec4 slice0Color = texture2D(tex, slice0Offset + uv);
-  vec4 slice1Color = texture2D(tex, slice1Offset + uv);
-  return mix(slice0Color, slice1Color, zOffset);
-  return slice0Color;
-}
+// vec4 scan3DTextureValue (
+//     sampler2D tex, vec3 texCoord, float size, float numRows, float slicesPerRow) {
+//   float slice   = texCoord.z * size;
+//   float sliceZ  = floor(slice);                         // slice we need
+//   float zOffset = fract(slice);                         // dist between slices
+//   vec2 sliceSize = vec2(1.0 / slicesPerRow,             // u space of 1 slice
+//                         1.0 / numRows);                 // v space of 1 slice
+//   vec2 slice0Offset = computeSliceOffset(sliceZ, slicesPerRow, sliceSize);
+//   vec2 slice1Offset = computeSliceOffset(sliceZ + 1.0, slicesPerRow, sliceSize);
+//   vec2 slicePixelSize = sliceSize / size;               // space of 1 pixel
+//   vec2 sliceInnerSize = slicePixelSize * (size - 1.0);  // space of size pixels
+//   vec2 uv = slicePixelSize * 0.5 + texCoord.xy * sliceInnerSize;
+//   vec4 slice0Color = texture2D(tex, slice0Offset + uv);
+//   vec4 slice1Color = texture2D(tex, slice1Offset + uv);
+//   return mix(slice0Color, slice1Color, zOffset);
+//   return slice0Color;
+// }
 
 // vec4 sampleAs3DTexture (vec3 pos) {
 //   return sin(pos.x);
@@ -210,20 +209,61 @@ vec4 scan3DTextureValue (
 //   // texture3Doutput.a *= 0.5;
 //   // return texture3Doutput;
 // }
+//
+
+// https://www.shadertoy.com/view/3sySRK
+// from cine shader by edan kwan
+float opSmoothUnion( float d1, float d2, float k ) {
+  float h = clamp( 0.5 + 0.5*(d2-d1)/k, 0.0, 1.0 );
+  return mix( d2, d1, h ) - k*h*(1.0-h);
+}
+
+float sdSphere( vec3 p, float s ) {
+return length(p)-s;
+}
+
+// float sdMetaBall(vec3 p) {
+//   float d = 2.0;
+//   for (int i = 0; i < 15; i++) {
+//     float fi = float(i);
+//     float tt = time * (fract(fi * 412.531 + 0.513) - 0.5) * 3.0;
+//     d = opSmoothUnion(
+//         sdSphere(p + sin(tt + fi * vec3(52.5126, 64.62744, 632.25)) * vec3(2.0, 2.0, 0.8), mix(0.1, 1.0, fract(fi * 412.531 + 0.5124))),
+//       d,
+//       0.3
+//     );
+//   }
+//   return d;
+// }
 
 vec4 sampleAs3DTexture (vec3 pos) {
-  float scale = 1.5;
-  vec4 r4 = vec4(
-    (snoise(scale * pos + time * 0.25 + pos.x * 0.25)),
-    (snoise(scale * pos + time * 0.25 + pos.y * 0.25)),
-    (snoise(scale * pos + time * 0.25 + pos.z * 0.25)),
-    0.5
-  );
+  pos = pos / 12.0;
 
-  r4.a *= abs(r4.r) + abs(r4.g) + abs(r4.b);// / float(MAX_STEPS);
-  r4.a = r4.a;
-  r4.rgb = r4.rgb;
-  return r4;
+  pos *= 3.0;
+
+  float a = (snoise(pos + time));
+
+  if (a <= 0.0) {
+    a = 0.0;
+  }
+
+  //
+
+  return vec4(normalize(pos), a);
+
+  // float scale = 1.5;
+  // vec4 r4 = vec4(
+  //   (snoise(scale * pos + time * 0.25 + pos.x * 0.25)),
+  //   (snoise(scale * pos + time * 0.25 + pos.y * 0.25)),
+  //   (snoise(scale * pos + time * 0.25 + pos.z * 0.25)),
+  //   0.5
+  // );
+
+  // r4.a *= abs(r4.r) + abs(r4.g) + abs(r4.b) / float(MAX_STEPS);
+  // r4.a = r4.a;
+  // r4.rgb = r4.rgb;
+
+  // return r4;
 }
 
 void main( void ) {
@@ -268,7 +308,7 @@ float alphaSample;
 for(int i = 0; i < MAX_STEPS; i++)
 {
   //Get the voxel intensity value from the 3D texture.
-  colorSample = sampleAs3DTexture( currentPosition);
+  colorSample = sampleAs3DTexture( currentPosition );
 
   //Allow the alpha correction customization
   alphaSample = colorSample.a * alphaCorrection;
@@ -294,7 +334,7 @@ gl_FragColor  = accumulatedColor;
 }`,
 
       uniforms: {
-        steps: { value: 20 },
+        steps: { value: 5 },
         alphaCorrection: { value: 0.85 },
         tex: { value: this.rtTexture.texture },
         time: { value: 0 },
@@ -313,6 +353,8 @@ gl_FragColor  = accumulatedColor;
 
     this.scenePass1 = new Scene();
     this.scenePass2 = new Scene();
+
+    //
     // this.scenePass2.background = new Color("#000000");
 
     let mat1 = new ShaderMaterial({
@@ -322,7 +364,10 @@ gl_FragColor  = accumulatedColor;
       transparent: false,
       side: BackSide,
     });
+
+    //
     let box1 = new BoxBufferGeometry(1, 1, 1, 128, 128, 128);
+    box1 = new SphereBufferGeometry(1, 32, 32);
     let drawable1 = new Mesh(box1, mat1);
 
     this.scenePass1.add(drawable1);
@@ -338,8 +383,16 @@ gl_FragColor  = accumulatedColor;
     let box2 = new BoxBufferGeometry(1, 1, 1, 128, 128, 128);
     let drawable2 = new Mesh(box2, mat2);
 
-    box1.scale(1, 1, 1);
-    box2.scale(1, 1, 1);
+    drawable1.scale.set(12, 12, 12);
+    drawable2.scale.set(12, 12, 12);
+
+    // this.mini.onLoop(() => {
+    //   drawable1.rotation.y += 0.01;
+    //   drawable2.rotation.y += 0.01;
+    // });
+
+    // drawable1.z += 1;
+    // drawable2.z += 1;
 
     this.scenePass2.add(drawable2);
 
@@ -350,37 +403,24 @@ gl_FragColor  = accumulatedColor;
 
     let geo3 = new PlaneBufferGeometry(15, 15, 2, 2);
     let mesh = new Mesh(geo3, mat3);
-    mesh.position.x = -0;
     this.drawable.add(mesh);
 
     let cameraInternal = new PerspectiveCamera(75, 2.0 / 2.0, 0.0001, 1000000);
     cameraInternal.position.z = 2;
     cameraInternal.updateProjectionMatrix();
 
+    //
     let globalCam = await this.mini.get("camera");
 
     this.mini.onLoop(() => {
-      // this.scenePass2.lookAt(globalCam.position);
-      // cameraInternal.fov = globalCam.fov;
+      mesh.lookAt(globalCam.position);
+
+      cameraInternal.fov = globalCam.fov;
       cameraInternal.position.copy(globalCam.position);
       cameraInternal.lookAt(0, 0, 0);
 
       cameraInternal.updateProjectionMatrix();
     });
-
-    // let OrbitControls =
-    //   require("three-stdlib/controls/OrbitControls").OrbitControls;
-    // let controls = new OrbitControls(cameraInternal, renderer.domElement);
-    // controls.enableDamping = true;
-    // this.mini.onLoop(() => {
-    //   controls.update();
-    // });
-
-    // this.mini.onLoop(() => {
-    //   globalCam.updateProjectionMatrix();
-    //   cameraInternal.matrixWorldInverse.copy(globalCam.matrixWorldInverse);
-    //   cameraInternal.updateProjectionMatrix();
-    // });
 
     this.compute = () => {
       let time = window.performance.now() * 0.001;
@@ -398,6 +438,9 @@ gl_FragColor  = accumulatedColor;
       renderer.setClearColor(0xffffff, 0.0);
       renderer.clear(true, true, true);
       renderer.render(this.scenePass1, cameraInternal);
+
+      //
+      //
       renderer.setRenderTarget(this.rtTexture2);
       renderer.setClearAlpha(0.0);
       renderer.setClearColor(0xffffff, 0.0);

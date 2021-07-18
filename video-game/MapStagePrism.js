@@ -251,24 +251,31 @@ function MyWiggles() {
   });
 
   useEffect(() => {
-    let api = new VolumeVisualiser({ mini: mini });
-    mini.onLoop(() => {
-      if (api.compute) {
-        api.compute();
-      }
-    });
+    // let api = new VolumeVisualiser({ mini: mini });
+    // mini.onLoop(() => {
+    //   if (api.compute) {
+    //     api.compute();
+    //   }
+    // });
+    //
     // new WiggleTrackerObject({
     //   node: mini,
     // });
+    //
     // let tracker = new Vector3().copy(Now.avatarAt);
     // mini.onLoop(() => {
     //   tracker.copy(Now.avatarAt);
     //   tracker.y += 2.3;
     // });
     // mini.set("tracker", tracker);
+    //
   }, [mini]);
 
-  return <group scale={1} ref={ref}></group>;
+  return (
+    <group position-x={0} position-y={0}>
+      <group ref={ref}></group>;
+    </group>
+  );
 }
 
 export function MapScene() {

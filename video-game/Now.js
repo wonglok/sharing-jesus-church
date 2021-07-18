@@ -17,6 +17,7 @@ export const Now = makeShallowStore({
   // avatarAtPhy: new Vector3(),
 
   camMode: "auto",
+  // camMode: "first",
 
   overlay: "",
 

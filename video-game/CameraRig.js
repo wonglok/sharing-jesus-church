@@ -83,9 +83,9 @@ export function CameraRig() {
       (ev) => {
         ev.preventDefault();
 
-        zoom.current += ev.deltaY * 0.0005;
+        zoom.current += ev.deltaY * 0.0005 * 5.0;
         if (zoom.current <= 0.45) {
-          zoom.current -= ev.deltaY * 0.0005;
+          zoom.current -= ev.deltaY * 0.0005 * 5.0;
         }
       },
       { passive: false }

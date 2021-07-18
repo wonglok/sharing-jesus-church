@@ -131,35 +131,80 @@ export function MapSimulation({
 
   let collider = colliderRef.current;
 
+  /*
+
+  const controls = new PointerLockControls(camera, gl.domElement);
+  camera.position.copy(Now.avatarAt);
+  camera.position.y += 10;
+  camera.position.z += 10;
+
+  // add event listener to show/hide a UI (e.g. the game's menu)
+
+  // camera.rotation;
+  controls.addEventListener("lock", function () {
+    // menu.style.display = "none";
+  });
+
+  controls.addEventListener("unlock", function () {
+    // menu.style.display = "block";
+  });
+
+  gl.domElement.addEventListener("click", () => {
+    controls.lock();
+  });
+
+  */
+
   useEffect(() => {
     if (!collider) {
       return;
     }
+
     const floorcaster = new Raycaster();
     const renderer = gl;
     const mouse = new Vector2();
     let x = 0;
     let y = 0;
+    let up = new Vector3(0, 1, 0);
 
-    let h = {
-      click: (e) => {
-        mouse.x = (x / window.innerWidth) * 2 - 1;
-        mouse.y = -(y / window.innerHeight) * 2 + 1;
-        floorcaster.setFromCamera(mouse, camera);
+    let goFnc = () => {
+      mouse.x = (x / window.innerWidth) * 2 - 1;
+      mouse.y = -(y / window.innerHeight) * 2 + 1;
+      floorcaster.setFromCamera(mouse, camera);
 
-        // floorcaster.ray.applyMatrix4(invMat);
+      const hit = collider.geometry.boundsTree.raycastFirst(
+        collider,
+        floorcaster,
+        floorcaster.ray
+      );
 
-        const hit = collider.geometry.boundsTree.raycastFirst(
-          collider,
-          floorcaster,
-          floorcaster.ray
-        );
-        // console.log(hit.point);
-
-        if (hit) {
-          console.log(hit.point);
+      if (hit && Now.camMode === "auto") {
+        let vertical = hit.face.normal.dot(up);
+        if (vertical > 0.5) {
           Now.goingTo.copy(hit.point);
         }
+      }
+    };
+    let h = {
+      click: (e) => {
+        // mouse.x = (x / window.innerWidth) * 2 - 1;
+        // mouse.y = -(y / window.innerHeight) * 2 + 1;
+        // floorcaster.setFromCamera(mouse, camera);
+
+        // // floorcaster.ray.applyMatrix4(invMat);
+
+        // const hit = collider.geometry.boundsTree.raycastFirst(
+        //   collider,
+        //   floorcaster,
+        //   floorcaster.ray
+        // );
+        // // console.log(hit.point);
+
+        // if (hit) {
+        //   console.log(hit.point);
+        //   Now.goingTo.copy(hit.point);
+        // }
+        goFnc();
       },
       goDown: (e) => {
         x = e.clientX;
@@ -181,19 +226,7 @@ export function MapSimulation({
           y = e.clientY;
         }
         if (Now.isDown && !(x === 0 && y === 0)) {
-          mouse.x = (x / window.innerWidth) * 2 - 1;
-          mouse.y = -(y / window.innerHeight) * 2 + 1;
-          floorcaster.setFromCamera(mouse, camera);
-
-          const hit = collider.geometry.boundsTree.raycastFirst(
-            collider,
-            floorcaster,
-            floorcaster.ray
-          );
-
-          if (hit) {
-            Now.goingTo.copy(hit.point);
-          }
+          goFnc();
         }
       },
     };
@@ -229,12 +262,14 @@ export function MapSimulation({
     };
   }, [collider]);
 
+  //
+
   let playerRef = useRef();
   useEffect(() => {
     let RoundedBoxGeometry =
       require("three/examples/jsm/geometries/RoundedBoxGeometry.js").RoundedBoxGeometry;
     let scale = 1;
-    let radius = 1 * scale;
+    let radius = 1.3 * scale;
     let width = 1 * scale;
     let height = 2 * scale;
     let depth = 1 * scale;
@@ -363,7 +398,7 @@ export function MapSimulation({
     // adjust the player model
     player.position.copy(newPosition);
     Now.avatarAt.copy(player.position);
-    Now.avatarAt.y += 0.1;
+    // Now.avatarAt.y += 0.1;
 
     rotationCopier.position.copy(player.position);
     rotationCopier.lookAt(
@@ -387,6 +422,7 @@ export function MapSimulation({
         deltaVector,
         -deltaVector.dot(playerVelocity)
       );
+      //
     } else {
       playerVelocity.set(0, 0, 0);
     }
@@ -412,6 +448,7 @@ export function MapSimulation({
 
   return (
     <group>
+      {/* <primitive object={player}></primitive> */}
       <group visible={debugCollider}>
         {collider && <primitive object={collider}></primitive>}
       </group>
