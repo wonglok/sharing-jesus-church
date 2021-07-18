@@ -10,12 +10,12 @@ import {
   onReady,
   firebase,
 } from "../video-game/AppFirebase";
-import { ShaderCubeChrome } from "../vfx-library/ShaderCubeChromeDense";
+import { ShaderCubeChromeDense } from "../vfx-library/ShaderCubeChromeDense";
 
 function Content() {
   let { viewport, gl } = useThree();
   let rainbow = useMemo(() => {
-    let rainbow = new ShaderCubeChrome({
+    let rainbow = new ShaderCubeChromeDense({
       renderer: gl,
       res: 1024,
       color: new Color("#ffffff"),
