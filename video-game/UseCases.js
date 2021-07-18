@@ -812,6 +812,7 @@ export function OtherAvatarDisplay({ uid, roomID }) {
     other.traverse((item) => {
       if (item.material) {
         item.material = item.material.clone();
+        item.material.side = DoubleSide;
       }
     });
 
