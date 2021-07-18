@@ -263,7 +263,12 @@ export function MapScene() {
 
         <EnvMap></EnvMap>
         <MapFloor></MapFloor>
-        <group position-z={-30} position-y={10} scale={0.5}>
+        <group
+          rotation-x={Math.PI * -0.2}
+          position-z={-30}
+          position-y={10}
+          scale={0.5}
+        >
           {/* <Floating> */}
           <Cross></Cross>
           {/* </Floating> */}
