@@ -1,12 +1,4 @@
-import {
-  Detailed,
-  // useBVH,
-  // useFBX,
-  useCubeTexture,
-  useFBX,
-  useGLTF,
-  useTexture,
-} from "@react-three/drei";
+import { useFBO, useFBX } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { EnvMap } from "./EnvMap";
@@ -20,21 +12,16 @@ import {
 
 import {
   AdditiveBlending,
-  BackSide,
   Color,
-  CubeReflectionMapping,
-  CubeRefractionMapping,
   DoubleSide,
-  EquirectangularRefractionMapping,
-  FrontSide,
-  MeshBasicMaterial,
   Object3D,
+  PerspectiveCamera,
+  Scene,
   ShaderMaterial,
-  TextureLoader,
   Vector3,
 } from "three";
 
-import { extend, useFrame, useThree } from "@react-three/fiber";
+import { createPortal, useFrame, useThree } from "@react-three/fiber";
 // import { CameraRig } from "./CameraRig";
 import { setup, firebase } from "./AppFirebase";
 // import { Debug, Physics, useConvexPolyhedron } from "@react-three/cannon";
@@ -43,13 +30,13 @@ import { setup, firebase } from "./AppFirebase";
 import { Now } from "./Now";
 // import { ShaderCubeChrome } from "../Shaders/ShaderCubeChrome";
 // import { ENRuntime } from "../ENCloudSDK/ENRuntime";
-import { Bloomer, enableBloom } from "../vfx-library/Bloomer";
+// import { Bloomer, enableBloom } from "../vfx-library/Bloomer";
 import { ENMini } from "../vfx-runtime/ENMini";
 // import { WiggleTrackerObject } from "../ENBatteries/museum/loklok";
 // import { CameraRig } from "./CameraRig";
 // import { RepeatWrapping } from "three";
 // import { Sphere } from "@react-three/drei";
-import { LightExpress, ShadowFloor } from "./ShadowLighting";
+import { LightExpress } from "./ShadowLighting";
 
 //
 // import { ShaderCubeChromeGlass } from "../vfx-library/ShaderCubeChromeGlass";
@@ -59,7 +46,7 @@ import { LightExpress, ShadowFloor } from "./ShadowLighting";
 //
 
 // import { CameraRigChurch } from "./CameraRigChurch";
-import { RainbowFly } from "./RainbowFly";
+import { RainbowClassic } from "./RainbowClassic";
 import { CameraRig } from "./CameraRig";
 
 function MapFloor() {
@@ -71,7 +58,7 @@ function MapFloor() {
   useEffect(() => {
     let orig = scene.background;
 
-    scene.background = new Color("#ccccff");
+    scene.background = new Color("#75b4d4");
 
     return () => {
       scene.background = orig;
@@ -81,7 +68,7 @@ function MapFloor() {
   let { floor } = useMemo(() => {
     let src = SkeletonUtils.clone(map.scene);
 
-    src.scale.set(0.035 * 0.5, 0.035 * 0.5, 0.035 * 0.5);
+    src.scale.set(0.035 * 0.4, 0.035 * 0.4, 0.035 * 0.4);
     src.rotation.y = Math.PI * (1.0 + 0.5);
 
     src.position.y = -2;
@@ -91,6 +78,7 @@ function MapFloor() {
         // item.material.transparent = true;
         // item.material.opacity = 0.5;
         item.material.side = DoubleSide;
+        // item.material.emissive = new Color("#111111");
 
         // item.receiveShadow = true;
         // item.castShadow = true;
@@ -169,7 +157,7 @@ function MapFloor() {
             </Suspense>
           </Suspense>
 
-          <RainbowFly></RainbowFly>
+          <RainbowClassic></RainbowClassic>
 
           <LightExpress></LightExpress>
           {/* <ShadowFloor></ShadowFloor> */}
@@ -247,7 +235,8 @@ export function MapScene() {
   return (
     <>
       {/* <CameraRigFirstPerson></CameraRigFirstPerson> */}
-      <CameraRig></CameraRig>
+      {/* <CameraRig></CameraRig> */}
+      <CameraRig zoomInit={4.5}></CameraRig>
 
       {/* <Bloomer></Bloomer> */}
       {/* <NoBloomRenderLoop></NoBloomRenderLoop> */}
@@ -280,7 +269,8 @@ export function MapScene() {
         </group>
       </Suspense>
 
-      <HeavenlyClouds></HeavenlyClouds>
+      {/* <LookatMeCloud></LookatMeCloud> */}
+      {/* <HeavenlyClouds></HeavenlyClouds> */}
     </>
   );
 }
@@ -310,18 +300,22 @@ function Cross() {
   );
 }
 
-function HeavenlyClouds() {
+function LookatMeCloud() {
+  let { camera, scene } = useThree();
+  useEffect(() => {
+    scene.add(camera);
+    return () => {
+      scene.remove(camera);
+    };
+  });
   return (
-    <group position={[0, 0, 0]}>
-      <Detailed distances={[0, 150]}>
-        <group position={[0, 50, 0]} scale={[1, 1, 1]}>
+    <group>
+      {createPortal(
+        <group position-z={-1500} scale={30}>
           <CloudPlane></CloudPlane>
-        </group>
-
-        <group position={[0, 0, 0]} scale={[5, 5, 5]}>
-          <CloudPlane></CloudPlane>
-        </group>
-      </Detailed>
+        </group>,
+        camera
+      )}
     </group>
   );
 }
@@ -330,7 +324,7 @@ function CloudPlane() {
   let mesh = useRef();
   let { camera } = useThree();
 
-  let count = 125;
+  let count = 1;
   useEffect(() => {
     if (mesh.current) {
       let o3dt = new Object3D();
@@ -355,12 +349,14 @@ function CloudPlane() {
 
           varying vec2 vUv;
           varying vec3 vPos;
+          varying vec3 vCamPos;
 
           void main (void) {
             //
             vec4 iPos = instanceMatrix * vec4(position, 1.0);
             gl_Position = projectionMatrix * modelViewMatrix * iPos;
 
+            vCamPos = cameraPosition;
             vPos = iPos.xyz;
             vUv = uv;
           }
@@ -369,7 +365,7 @@ function CloudPlane() {
           //
           varying vec3 vPos;
           uniform float count;
-          uniform vec3 dir;
+          varying vec3 vCamPos;
 
         //  Simplex 3D Noise
         //  by Ian McEwan, Ashima Arts
@@ -459,27 +455,35 @@ function CloudPlane() {
             return height;
           }
 
-          void main( void ) {
-            vec3 coord	= vec3( vUv, vPos.z / count );
+          vec4 mainImage (float depth, float total) {
+            vec4 outC = vec4(0.0);
+
+            vec3 coord	= vec3( vUv, vPos.z );
             coord.x += time * -0.05;
 
-            float height	= surface3( coord );
+            float height	= surface3( coord + (pow(length(vCamPos), 0.7) / 700.0 ) + vec3(0.0, 0.0, depth) );
 
-            if( height < 0.8 ) discard;
-            height = (height-0.8)/0.2;
-            float alpha = height/1.0;
+            height = clamp(height, 0.0, 1.0);
+            height = pow(height, 15.0);
 
-            if(height < 0.9){
-              alpha = (height/0.9);
-            }else{
-              alpha = 1.0;
+            outC = vec4(vec3(height), height);
+
+            return outC;
+          }
+
+          void main( void ) {
+            vec4 colors = vec4(0.0, 0.0, 0.0, 1.0);
+
+            float z = 0.0;
+            for (int i = 0; i < 5; i++) {
+              vec4 img = mainImage(z / 15.0, 5.0);
+
+              colors.rgba += img.rgba / 10.0;
+
+              z += 1.0;
             }
-            alpha = alpha / 2.0;
-            height = height * 0.4 + 0.4;
 
-            float aa = alpha * 1.5 / count;
-
-            gl_FragColor	= vec4( vec3(height, height, height), aa );
+            gl_FragColor = colors;
           }
         `,
         depthWrite: false,
@@ -498,7 +502,10 @@ function CloudPlane() {
     if (mesh?.current?.material) {
       mesh.current.material.uniforms.time.value += dt;
 
-      mesh.current.lookAt(camera.position);
+      // mesh.current.lookAt(camera.position);
+      mesh.current.rotation.x = Math.PI * 0.5;
+      mesh.current.rotation.y = 0;
+      mesh.current.rotation.z = 0;
 
       // dir.applyAxisAngle({ x: 0, y: 1, z: 0 }, Math.PI * 0.5);
     }
@@ -510,7 +517,7 @@ function CloudPlane() {
         ref={mesh}
         args={[undefined, undefined, count]}
       >
-        <planeBufferGeometry args={[count, count]}></planeBufferGeometry>
+        <planeBufferGeometry args={[100, 100]}></planeBufferGeometry>
       </instancedMesh>
     </group>
   );

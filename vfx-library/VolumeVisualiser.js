@@ -236,20 +236,48 @@ return length(p)-s;
 //   return d;
 // }
 
+float surface3( vec3 coord ){
+  float height	= 0.0;
+  coord	*= 0.8;
+  height	+= abs(snoise(coord      )) * 1.0;
+  height	+= abs(snoise(coord * 2.0)) * 0.5;
+  height	+= abs(snoise(coord * 4.0)) * 0.25;
+  height	+= abs(snoise(coord * 8.0)) * 0.125;
+  return height;
+}
+
 vec4 sampleAs3DTexture (vec3 pos) {
   pos = pos / 12.0;
 
-  pos *= 3.0;
+  vec4 v4 = vec4(0.0);
 
-  float a = (snoise(pos + time));
+  vec3 coord	= vec3( pos );
+  coord.x += time * 1.0;
 
-  if (a <= 0.0) {
-    a = 0.0;
+  vec3 camPos = vec3(1.0);
+  float count = 5.0;
+
+  float height	= surface3( coord * (pow(length(camPos), 0.8) / 250.0 + 1.3) );
+
+  if( height < 0.8 ) discard;
+  height = (height-0.8)/0.2;
+  float alpha = height/1.0;
+
+  if(height < 0.9){
+    alpha = (height/0.9);
+  }else{
+    alpha = 1.0;
   }
+  alpha = alpha / 2.0;
+  height = height * 0.4 + 0.4;
 
-  //
+  float aa = alpha * 1.5 / count * 2.0;
 
-  return vec4(normalize(pos), a);
+  v4	= vec4( vec3(height, height, height), height );
+
+  return v4;
+
+
 
   // float scale = 1.5;
   // vec4 r4 = vec4(
@@ -335,7 +363,7 @@ gl_FragColor  = accumulatedColor;
 
       uniforms: {
         steps: { value: 5 },
-        alphaCorrection: { value: 0.85 },
+        alphaCorrection: { value: 0.1 },
         tex: { value: this.rtTexture.texture },
         time: { value: 0 },
 
@@ -367,7 +395,6 @@ gl_FragColor  = accumulatedColor;
 
     //
     let box1 = new BoxBufferGeometry(1, 1, 1, 128, 128, 128);
-    box1 = new SphereBufferGeometry(1, 32, 32);
     let drawable1 = new Mesh(box1, mat1);
 
     this.scenePass1.add(drawable1);

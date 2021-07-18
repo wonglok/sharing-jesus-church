@@ -251,13 +251,13 @@ function MyWiggles() {
   });
 
   useEffect(() => {
-    // let api = new VolumeVisualiser({ mini: mini });
-    // mini.onLoop(() => {
-    //   if (api.compute) {
-    //     api.compute();
-    //   }
-    // });
-    //
+    let api = new VolumeVisualiser({ mini: mini });
+    mini.onLoop(() => {
+      if (api.compute) {
+        api.compute();
+      }
+    });
+
     // new WiggleTrackerObject({
     //   node: mini,
     // });

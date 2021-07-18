@@ -1,14 +1,15 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { usePinch } from "react-use-gesture";
+import { Vector3 } from "three";
 import { OrbitControls } from "three-stdlib";
 import { Now } from "./Now";
 
-export function CameraRig() {
+export function CameraRig({ zoomInit = 2 }) {
   let { camera, gl } = useThree();
   let works = useRef({});
   Now.makeKeyReactive("camMode");
-  let zoom = useRef(2);
+  let zoom = useRef(zoomInit);
 
   usePinch(
     (state) => {
@@ -113,6 +114,7 @@ export function CameraRig() {
       orbit.object.position.z +=
         (1000 / 30) * 0.025 * Math.pow(zoom.current, 0.9);
     };
+
     return () => {};
   }, []);
 

@@ -594,9 +594,9 @@ export function SelfDataEmitter() {
       let DBRef = db.ref(`rooms/${getRoomID()}/${user.uid}`);
       if (Now.profile) {
         DBRef.update({
-          avatarURL: Now.profile.avatarURL,
-          avatarSignature: Now.profile.avatarSignature,
-          avatarTextureRefURL: Now.profile.avatarTextureRefURL,
+          avatarURL: Now.profile.avatarURL || "",
+          avatarSignature: Now.profile.avatarSignature || "",
+          avatarTextureRefURL: Now.profile.avatarTextureRefURL || "",
           //
           avatarAt: {
             x: avatarAt.x,
