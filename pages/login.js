@@ -69,7 +69,7 @@ export default function page() {
                     onReady().then(({ user, db, app }) => {
                       db.ref(`profiles/${user.uid}`).once("value", (snap) => {
                         if (snap.val()) {
-                          router.push("/room/multitude");
+                          router.push("/room/heavenly");
                         } else {
                           router.push("/avatar");
                         }
@@ -94,7 +94,7 @@ export default function page() {
                     onReady().then(({ user, db, app }) => {
                       db.ref(`profiles/${user.uid}`).once("value", (snap) => {
                         if (snap.val()) {
-                          router.push("/room/multitude");
+                          router.push("/room/heavenly");
                         } else {
                           router.push("/avatar");
                         }

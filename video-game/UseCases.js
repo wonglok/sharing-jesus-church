@@ -574,7 +574,7 @@ export function MainAvatarLogic({ profile, url }) {
 }
 
 export function getRoomID() {
-  let roomID = route.query.roomID || "multitude";
+  let roomID = route.query.roomID || "heavenly";
   return roomID;
 }
 

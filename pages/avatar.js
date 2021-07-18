@@ -282,7 +282,7 @@ function AvatarLayer() {
         db.ref(`profiles/${user.uid}/avatarTextureRefURL`).set(refURL);
       }
 
-      router.push("/room/loklok");
+      router.push("/room/heavenly");
     });
   };
 
