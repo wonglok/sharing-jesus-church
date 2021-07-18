@@ -805,6 +805,7 @@ export function OtherAvatarDisplay({ uid, roomID }) {
   let playerRef = useRef();
   let gpRef = useRef();
 
+  //
   let raw = useFBX("/chibi/ChibiBase-rigged.fbx");
   let chibi = useMemo(() => {
     let other = SkeletonUtils.clone(raw);
@@ -818,6 +819,8 @@ export function OtherAvatarDisplay({ uid, roomID }) {
 
     return other;
   }, [raw]);
+
+  //
 
   let running = useFBX(
     "/chibi/actions-for-this/contorls/running-in-place-relax.fbx"
