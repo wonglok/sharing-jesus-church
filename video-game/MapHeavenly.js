@@ -53,7 +53,7 @@ import { CameraRig } from "./CameraRig";
 function MapFloor() {
   let { scene } = useThree();
 
-  let map = useFBX("/map/heanvely-places.fbx");
+  let map = useFBX("/map/heanvely-places4.fbx");
   map.scene = map;
 
   useEffect(() => {
@@ -433,6 +433,7 @@ function LookatMeCloud() {
             height	+= abs(snoise(coord * 2.0)) * 0.5;
             height	+= abs(snoise(coord * 4.0)) * 0.25;
             height	+= abs(snoise(coord * 8.0)) * 0.125;
+            height	+= abs(snoise(coord * 35.0)) * 0.035;
             return height;
           }
 
