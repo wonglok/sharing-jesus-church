@@ -2118,6 +2118,11 @@ next@10.x:
     vm-browserify "1.1.2"
     watchpack "2.1.1"
 
+nipplejs@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/nipplejs/-/nipplejs-0.9.0.tgz#b5fcfcc7a85bf3e025cd3955a738ef9dc0bb0afe"
+  integrity sha512-TH2CkxWiTAnc0ld/Q8wQMFAhlWTL1QYWuwNLqmMzh8Y1dLv3ECKYydkfiyoiRwSy+fQvCukXvu2RSHinvjOoUg==
+
 node-emoji@^1.8.1:
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/node-emoji/-/node-emoji-1.10.0.tgz#8886abd25d9c7bb61802a658523d1f8d2a89b2da"

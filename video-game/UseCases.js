@@ -181,7 +181,9 @@ export function MapSimulation({
       if (hit && Now.camMode === "auto") {
         let vertical = hit.face.normal.dot(up);
         if (vertical > 0.5) {
-          Now.goingTo.copy(hit.point);
+          if (Now.enableFloorCursor) {
+            Now.goingTo.copy(hit.point);
+          }
         }
       }
     };
@@ -319,6 +321,7 @@ export function MapSimulation({
   function updatePlayer({ delta, player }) {
     // fall down
     playerVelocity.y += delta * -9.8;
+
     player.position.addScaledVector(playerVelocity, delta);
 
     if (player.position.y <= -50) {
@@ -334,6 +337,8 @@ export function MapSimulation({
     let size = avatarDir.length();
     avatarDir.normalize();
     avatarDir.y = 0;
+
+    avatarDir.multiplyScalar(Now.speed);
 
     if (size >= 0.1) {
       player.position.addScaledVector(avatarDir, 0.04);
@@ -397,6 +402,8 @@ export function MapSimulation({
 
     // adjust the player model
     player.position.copy(newPosition);
+
+    //
     Now.avatarAt.copy(player.position);
     // Now.avatarAt.y += 0.1;
 

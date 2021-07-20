@@ -74,6 +74,13 @@ export function CameraRigFirstPerson() {
   }, []);
 
   useEffect(() => {
+    Now.speed = 10;
+    return () => {
+      Now.speed = 1;
+    };
+  }, []);
+
+  useEffect(() => {
     camera.near = 0.1;
     camera.far = 10000;
     camera.fov = 45;
@@ -126,70 +133,77 @@ export function CameraRigFirstPerson() {
       controls.lock();
     });
 
-    let forward = new Vector3();
-    let up = new Vector3(0, 1, 0);
-    let dir = new Vector3();
+    window.addEventListener("keydown", (ev) => {
+      // console.log(ev.key);
+
+      if (ev.key === "w") {
+        Now.keyW = true;
+      }
+      if (ev.key === "a") {
+        Now.keyA = true;
+      }
+      if (ev.key === "s") {
+        Now.keyS = true;
+      }
+      if (ev.key === "d") {
+        Now.keyD = true;
+      }
+    });
+    window.addEventListener("keyup", (ev) => {
+      // console.log(ev.key);
+
+      if (ev.key === "w") {
+        Now.keyW = false;
+      }
+      if (ev.key === "a") {
+        Now.keyA = false;
+      }
+      if (ev.key === "s") {
+        Now.keyS = false;
+      }
+      if (ev.key === "d") {
+        Now.keyD = false;
+      }
+    });
+
+    let forward = new Vector3(0, 0, 1);
     works.current.ctrl = () => {
       camera.position.x = Now.avatarAt.x;
-      camera.position.y = Now.avatarAt.y + 5;
+      camera.position.y = Now.avatarAt.y + 10;
       camera.position.z = Now.avatarAt.z;
+      // controls.getDirection(dir);
 
-      if (Now.isDown) {
-        controls.getDirection(dir);
+      if (Now.keyW) {
+        forward.set(0, 0, -1);
+        forward.applyEuler(camera.rotation);
+        forward.y = 0.0;
 
-        dir.normalize();
-        dir.y = 0;
-        dir.multiplyScalar(10);
+        Now.goingTo.add(forward);
+      } else if (Now.keyA) {
+        forward.set(-1, 0, 0);
+        forward.applyEuler(camera.rotation);
+        forward.y = 0.0;
 
-        Now.goingTo.add(dir);
+        Now.goingTo.add(forward);
+      } else if (Now.keyS) {
+        forward.set(0, 0, 1);
+        forward.applyEuler(camera.rotation);
+        forward.y = 0.0;
 
-        // camera.position.copy(Now.avatarAt);
-        // camera.position.y += 10;
-        // camera.position.z += 10;
-      } else {
+        Now.goingTo.add(forward);
+      } else if (Now.keyD) {
+        forward.set(1, 0, 0);
+        forward.applyEuler(camera.rotation);
+        forward.y = 0.0;
+
+        Now.goingTo.add(forward);
+      }
+
+      if (!(Now.keyW || Now.keyA || Now.keyS || Now.keyD)) {
         Now.goingTo.copy(Now.avatarAt);
       }
 
       //
-      //
-      //
-      // orbit.update();
-      // orbit.target.copy(Now.goingTo);
-      // orbit.target.y += 10;
-      // orbit.target.z += 10;
-      // if (Now.isDown && Now.camMode === "first") {
-      //   let a = orbit.getAzimuthalAngle();
-      //   a = a;
-      //   forwad.set(0, 0, -1).applyAxisAngle(up, a);
-      //   Now.avatarAt.add(forwad);
-      // }
-      // camera.position.lerp(
-      //   {
-      //     x: Now.avatarAt.x,
-      //     y: Now.avatarAt.y + 10,
-      //     z: Now.avatarAt.z - 10,
-      //   },
-      //   0.01
-      // );
-      // orbit.target.lerp(
-      //   {
-      //     x: Now.goingTo.x,
-      //     y: Now.goingTo.y + 10,
-      //     z: Now.goingTo.z,
-      //   },
-      //   0.01
-      // );
-      // orbit.update();
-      // orbit.object.position.copy(Now.avatarAt);
-      // orbit.object.lookAt(Now.goingTo);
-      // orbit.target.lerp(Now.avatarAt, 0.05);
-      // orbit.target.y += 1.8 / 10;
-      // //
-      // orbit.object.position.lerp(Now.avatarAt, 0.05);
-      // orbit.object.position.y +=
-      //   (300 / 30) * 0.025 * Math.pow(zoom.current, 1.5) + 1.8 / 10;
-      // orbit.object.position.z +=
-      //   (1000 / 30) * 0.025 * Math.pow(zoom.current, 0.9);
     };
     return () => {};
   }, []);

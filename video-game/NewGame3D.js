@@ -51,6 +51,12 @@ let Pages = [
     ),
   },
 
+  //
+  {
+    name: "bread",
+    Component: dynamic(() => import("./MapBread.js").then((e) => e.MapScene)),
+  },
+
   // MapPlaceToChill
 ];
 
