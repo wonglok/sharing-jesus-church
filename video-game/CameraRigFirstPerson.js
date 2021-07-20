@@ -1,4 +1,5 @@
-import { useFrame, useThree } from "@react-three/fiber";
+import { Text } from "@react-three/drei";
+import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import { usePinch } from "react-use-gesture";
 import { Vector3 } from "three";
@@ -114,9 +115,9 @@ export function CameraRigFirstPerson() {
     // let up = new Vector3(0, 1, 0);
     // let forwad = new Vector3(0, 0, 0.1);
     const controls = new PointerLockControls(camera, gl.domElement);
-    camera.position.copy(Now.avatarAt);
-    camera.position.y += 10;
-    camera.position.z += 10;
+    // camera.position.copy(Now.avatarAt);
+    // camera.position.y += 10;
+    // camera.position.z += 10;
 
     // add event listener to show/hide a UI (e.g. the game's menu)
 
@@ -168,6 +169,10 @@ export function CameraRigFirstPerson() {
 
     let forward = new Vector3(0, 0, 1);
     works.current.ctrl = () => {
+      if (Now.isUnLocked !== !controls.isLocked) {
+        Now.isUnLocked = !controls.isLocked;
+      }
+
       camera.position.x = Now.avatarAt.x;
       camera.position.y = Now.avatarAt.y + 10;
       camera.position.z = Now.avatarAt.z;
@@ -211,5 +216,27 @@ export function CameraRigFirstPerson() {
   useFrame(() => {
     Object.values(works.current).forEach((e) => e());
   });
-  return <group></group>;
+  Now.makeKeyReactive("isUnLocked");
+
+  let { viewport } = useThree();
+  return (
+    <group>
+      {createPortal(
+        <group visible={Now.isUnLocked} position-y={0.5} position-z={-10}>
+          <Text fontSize={0.3} outlineWidth={0.01}>
+            Click the screen to begin.
+          </Text>
+          <group position-y={-0.5}>
+            <Text fontSize={0.25} outlineWidth={0.01}>
+              Use W A S D keyborad to move around.
+            </Text>
+            <Text position-y={-0.5} fontSize={0.25} outlineWidth={0.01}>
+              Press [Esc] to show your cursor.
+            </Text>
+          </group>
+        </group>,
+        camera
+      )}
+    </group>
+  );
 }
