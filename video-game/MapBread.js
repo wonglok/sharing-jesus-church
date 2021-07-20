@@ -46,13 +46,14 @@ import { CameraRigNipple } from "./CameraRigNipple";
 function MapFloor() {
   let { scene } = useThree();
 
-  let map = useFBX("/map/bread-04.fbx");
+  let map = useFBX("/map/bread-06.fbx");
   map.scene = map;
 
   useEffect(() => {
+    //
     let orig = scene.background;
 
-    scene.background = new Color("#75b4d4");
+    scene.background = new Color("#75b4d4").offsetHSL(0, 0.3, -0.43);
     return () => {
       scene.background = orig;
     };
@@ -61,40 +62,22 @@ function MapFloor() {
   let { floor } = useMemo(() => {
     let src = SkeletonUtils.clone(map.scene);
 
-    src.scale.set(0.5, 0.5, 0.5);
+    src.scale.set(1, 1, 1);
     src.rotation.y = Math.PI * 1.0;
 
     src.position.y = -2;
     src.traverse((item) => {
       if (item.material) {
-        item.userData.useRainbow = true;
-        // item.material.transparent = true;
-        // item.material.opacity = 0.5;
         item.material.side = DoubleSide;
-        // item.material.emissive = new Color("#111111");
-
-        // item.receiveShadow = true;
-        // item.castShadow = true;
-        // if (item.name !== "Plane") {
-        //   item.userData.useRainbow = true;
-        //   item.material = new MeshBasicMaterial({
-        //     side: DoubleSide,
-        //   });
-        // }
-        //
       }
     });
     return { floor: src };
   }, []);
 
-  //
-
-  //
-
   let startAt = {
     x: 0.0,
     y: 0,
-    z: 0.0,
+    z: 300.0,
   };
 
   useFrame(() => {
@@ -121,23 +104,6 @@ function MapFloor() {
           ></MapSimulation>
 
           <SelfDataEmitter></SelfDataEmitter>
-
-          <group position-y={5}>
-            <Floating>
-              {/* <Sphere
-                onUpdate={(s) => {
-                  enableBloom(s);
-                }}
-                args={[3, 32, 32]}
-              >
-                <meshBasicMaterial
-                  transparent={true}
-                  opacity={0.5}
-                  color="#777777"
-                ></meshBasicMaterial>
-              </Sphere> */}
-            </Floating>
-          </group>
 
           <Suspense fallback={null}>
             <group visible={Now.enableFloorCursor}>
@@ -465,7 +431,6 @@ function LookatMeCloud() {
           vec4 mainImage (float depth) {
             vec4 outC = vec4(0.0);
 
-
             vec3 coord	= vec3( vUv, depth );
             coord.x += time * -0.05;
 
@@ -485,6 +450,8 @@ function LookatMeCloud() {
           for (int i = 0; i < 4;i++) {
             cloud += mainImage(float(i) / 3.0) / 2.0;
           }
+
+          cloud.rgb *= 0.7;
 
           gl_FragColor = cloud;
         }
@@ -515,13 +482,13 @@ function LookatMeCloud() {
   });
 
   useEffect(() => {
-    //
-
     scene.add(camera);
     return () => {
       scene.remove(camera);
     };
   }); //
+
+  //
   return (
     <group>
       {createPortal(
@@ -532,7 +499,7 @@ function LookatMeCloud() {
       )}
 
       {createPortal(
-        <mesh frustumCulled={false} scale={25} position-z={-1000}>
+        <mesh frustumCulled={false} scale={30} position-z={-2000}>
           <planeBufferGeometry args={[100, 100]}></planeBufferGeometry>
           <meshBasicMaterial
             transparent={true}

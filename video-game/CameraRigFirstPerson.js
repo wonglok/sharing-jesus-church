@@ -222,8 +222,13 @@ export function CameraRigFirstPerson() {
   return (
     <group>
       {createPortal(
-        <group visible={Now.isUnLocked} position-y={0.5} position-z={-10}>
-          <Text fontSize={0.3} outlineWidth={0.01}>
+        <group
+          scale={0.7}
+          visible={Now.isUnLocked}
+          position-y={0.5}
+          position-z={-10}
+        >
+          <Text fontSize={0.5} position-y={0.1} outlineWidth={0.01}>
             Click the screen to begin.
           </Text>
           <group position-y={-0.5}>
@@ -231,6 +236,9 @@ export function CameraRigFirstPerson() {
               Use W A S D keyborad to move around.
             </Text>
             <Text position-y={-0.5} fontSize={0.25} outlineWidth={0.01}>
+              Pan around to rotate view
+            </Text>
+            <Text position-y={-1} fontSize={0.2} outlineWidth={0.01}>
               Press [Esc] to show your cursor.
             </Text>
           </group>
@@ -240,3 +248,5 @@ export function CameraRigFirstPerson() {
     </group>
   );
 }
+
+// a

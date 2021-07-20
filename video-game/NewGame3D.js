@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { useRouter } from "next/router";
+import router, { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { PCFShadowMap, PCFSoftShadowMap } from "three";
@@ -56,6 +56,7 @@ let Pages = [
     name: "bread",
     Component: dynamic(() => import("./MapBread.js").then((e) => e.MapScene)),
   },
+  //
 
   // MapPlaceToChill
 ];
@@ -77,6 +78,8 @@ export function NewGame3D() {
     if (game) {
       setFound(game);
     } else {
+      setFound(false);
+      router.push("/room/heavenly");
       // fetch network or stuff...
     }
   }, [route.query.roomID]);
