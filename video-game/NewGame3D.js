@@ -78,8 +78,8 @@ export function NewGame3D() {
     if (game) {
       setFound(game);
     } else {
-      setFound(false);
-      router.push("/room/heavenly");
+      // setFound(false);
+      // router.push('/room/heavenly')
       // fetch network or stuff...
     }
   }, [route.query.roomID]);
