@@ -56,6 +56,10 @@ let Pages = [
     name: "bread",
     Component: dynamic(() => import("./MapBread.js").then((e) => e.MapScene)),
   },
+  {
+    name: "tv",
+    Component: dynamic(() => import("./MapTV.js").then((e) => e.MapScene)),
+  },
   //
 
   // MapPlaceToChill
@@ -104,6 +108,23 @@ export function NewGame3D() {
           Not Found
         </div>
       )}
+      <Cursor></Cursor>
     </div>
+  );
+}
+
+function Cursor() {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: `calc(50% - 2px)`,
+        left: `calc(50% - 2px)`,
+        width: "2px",
+        height: "2px",
+        backgroundColor: "red",
+        zIndex: "100000",
+      }}
+    ></div>
   );
 }

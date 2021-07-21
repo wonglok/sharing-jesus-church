@@ -1,6 +1,6 @@
-import { Text } from "@react-three/drei";
+import { Html, Text } from "@react-three/drei";
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, createPortal as reactPortal } from "react";
 import { usePinch } from "react-use-gesture";
 import { Vector3 } from "three";
 import { OrbitControls, PointerLockControls } from "three-stdlib";
@@ -131,7 +131,9 @@ export function CameraRigFirstPerson() {
     });
 
     gl.domElement.addEventListener("click", () => {
-      controls.lock();
+      if (Now.isUnLocked) {
+        controls.lock();
+      }
     });
 
     window.addEventListener("keydown", (ev) => {
