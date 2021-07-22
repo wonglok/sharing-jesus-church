@@ -230,17 +230,36 @@ export function CameraRigFirstPerson() {
           position-y={0.5}
           position-z={-10}
         >
-          <Text fontSize={0.5} position-y={0.1} outlineWidth={0.01}>
+          <Text
+            font={`/font/Cronos-Pro-Light_12448.ttf`}
+            fontSize={0.5}
+            position-y={0.1}
+            outlineWidth={0.01}
+          >
             Click the screen to begin.
           </Text>
           <group position-y={-0.5}>
-            <Text fontSize={0.25} outlineWidth={0.01}>
+            <Text
+              font={`/font/Cronos-Pro-Light_12448.ttf`}
+              fontSize={0.25}
+              outlineWidth={0.01}
+            >
               Use W A S D keyborad to move around.
             </Text>
-            <Text position-y={-0.5} fontSize={0.25} outlineWidth={0.01}>
+            <Text
+              position-y={-0.5}
+              font={`/font/Cronos-Pro-Light_12448.ttf`}
+              fontSize={0.25}
+              outlineWidth={0.01}
+            >
               Pan around to rotate view
             </Text>
-            <Text position-y={-1} fontSize={0.2} outlineWidth={0.01}>
+            <Text
+              position-y={-1}
+              font={`/font/Cronos-Pro-Light_12448.ttf`}
+              fontSize={0.2}
+              outlineWidth={0.01}
+            >
               Press [Esc] to show your cursor.
             </Text>
           </group>

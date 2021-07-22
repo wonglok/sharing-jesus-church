@@ -45,6 +45,7 @@ import { RainbowClassic } from "./RainbowClassic";
 // import { CameraRigFirstPerson } from "./CameraRigFirstPerson";
 // import { CameraRigNipple } from "./CameraRigNipple";
 import { CameraRigFPAdaptive } from "./CameraRigFPAdaptive";
+import { CameraRigChurch } from "./CameraRigChurch";
 
 // https://www.youtube.com/watch?v=rLbX-4uTwyM
 
@@ -129,7 +130,8 @@ function MapFloor() {
             </group>
           </group>
 
-          <TV floor={floor}></TV>
+          {/* <TV floor={floor}></TV> */}
+          <Youtube floor={floor}></Youtube>
 
           <MapSimulation
             startAt={startAt}
@@ -152,13 +154,47 @@ function MapFloor() {
             </Suspense>
           </Suspense>
 
-          <RainbowClassic></RainbowClassic>
+          {/* <RainbowClassic></RainbowClassic> */}
 
           <LightExpress></LightExpress>
           {/* <ShadowFloor></ShadowFloor> */}
         </group>
       )}
     </group>
+  );
+}
+
+function Youtube({ floor }) {
+  Now.makeKeyReactive("isUnLocked");
+  let scale = 1;
+  return (
+    <>
+      {createPortal(
+        <Html
+          style={{
+            width: `${334 * scale}px`,
+            height: `${216 * scale}px`,
+            background: "white",
+          }}
+          rotation-x={-Math.PI / 2}
+          position={[0, 0.05, -0.09]}
+          scale={1 / scale}
+          transform
+          occlude
+        >
+          <iframe
+            width={`${334 * scale}`}
+            height={`${216 * scale}`}
+            src="https://www.youtube.com/embed/ZN_OZjWZxKs"
+            title="YouTube video player"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullscreen
+          ></iframe>
+        </Html>,
+        floor.getObjectByName("wallpaper")
+      )}
+    </>
   );
 }
 
@@ -290,7 +326,7 @@ export function MapScene() {
 
   return (
     <>
-      <CameraRigFPAdaptive></CameraRigFPAdaptive>
+      {/* <CameraRigFPAdaptive></CameraRigFPAdaptive> */}
 
       {/* <Bloomer></Bloomer> */}
       {/* <NoBloomRenderLoop></NoBloomRenderLoop> */}
@@ -311,6 +347,7 @@ export function MapScene() {
         position={[-10, 10, 0]}
       ></directionalLight>
 
+      {/*  */}
       <Suspense fallback={null}>
         {/* <gridHelper args={[1000, 100, "white", "white"]}></gridHelper> */}
 
@@ -324,11 +361,11 @@ export function MapScene() {
           scale={1.5}
         >
           {/* <Floating> */}
-          <Cross></Cross>
+          {/* <Cross></Cross> */}
           {/* </Floating> */}
         </group>
       </Suspense>
-
+      <CameraRigChurch></CameraRigChurch>
       <LookatMeCloud></LookatMeCloud>
     </>
   );
