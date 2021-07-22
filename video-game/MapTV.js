@@ -150,9 +150,9 @@ function MapFloor() {
 
           {/* <TV floor={floor}></TV> */}
 
-          <group frustumCulled={false}>
+          {/* <group frustumCulled={false}>
             <Youtube floor={floor}></Youtube>
-          </group>
+          </group> */}
 
           <MapSimulation
             startAt={startAt}
