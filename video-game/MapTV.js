@@ -131,16 +131,19 @@ function MapFloor() {
                 poseURL={`/chibi/avatar-rpm/watchtv/lay-1.fbx`}
               ></LaydownGuy>
             </group>
+
             <group position-x={-10}>
               <LaydownGuy
                 poseURL={`/chibi/avatar-rpm/watchtv/sit-1.fbx`}
               ></LaydownGuy>
             </group>
+
             <group position-x={0}>
               <LaydownGuy
                 poseURL={`/chibi/avatar-rpm/watchtv/lay-2.fbx`}
               ></LaydownGuy>
             </group>
+
             <group position-x={20}>
               <LaydownGuy
                 poseURL={`/chibi/avatar-rpm/watchtv/sit-2.fbx`}
