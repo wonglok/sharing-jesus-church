@@ -43,7 +43,8 @@ import { LightExpress } from "./ShadowLighting";
 // import { CameraRigNipple } from "./CameraRigNipple";
 // import { CameraRigFPAdaptive } from "./CameraRigFPAdaptive";
 
-import { CameraRigChurch } from "./CameraRigChurch";
+import { CameraRigTV } from "./CameraRigTV";
+import { Portal } from "./Portal";
 
 // https://www.youtube.com/watch?v=rLbX-4uTwyM
 
@@ -77,6 +78,7 @@ function MapFloor() {
       if (item.name === "wallpaper") {
         item.material.color = new Color("#ffffff");
         item.material.metalness = 1.0;
+        item.frustumCulled = false;
       }
     });
     return { floor: src };
@@ -105,6 +107,23 @@ function MapFloor() {
         <group>
           <primitive object={floor}></primitive>
 
+          <Portal
+            text={{
+              ready: "SkyCity",
+              loading: "Teleporting...",
+            }}
+            action={() => {
+              Now.avatarAt.set(0, 0, 30);
+              Now.goingTo.set(0, 0, 30);
+              let router = require("next/router").default;
+              router.push("/room/heavenly");
+            }}
+            zone={{
+              x: -15.63622447790803,
+              y: -8.523961573896209,
+              z: 26.86449735462861,
+            }}
+          ></Portal>
           <group position-x={-5}>
             <group position-x={10}>
               <LaydownGuy
@@ -168,6 +187,7 @@ function Youtube({ floor }) {
     <>
       {createPortal(
         <Html
+          frustumCulled={false}
           style={{
             width: `${334 * scale}px`,
             height: `${216 * scale}px`,
@@ -363,7 +383,7 @@ export function MapScene() {
           {/* </Floating> */}
         </group>
       </Suspense>
-      <CameraRigChurch></CameraRigChurch>
+      <CameraRigTV></CameraRigTV>
       <LookatMeCloud></LookatMeCloud>
     </>
   );

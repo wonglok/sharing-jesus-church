@@ -49,6 +49,7 @@ import { LightExpress } from "./ShadowLighting";
 // import { CameraRigChurch } from "./CameraRigChurch";
 import { RainbowClassic } from "./RainbowClassic";
 import { CameraRig } from "./CameraRig";
+import { Portal } from "./Portal";
 
 function MapFloor() {
   let { scene } = useThree();
@@ -99,11 +100,13 @@ function MapFloor() {
 
   //
 
-  let startAt = {
-    x: 0.0,
+  let startAtRef = useRef({
+    x: 0,
     y: 0,
-    z: 0.0,
-  };
+    z: 0,
+  });
+
+  let startAt = startAtRef.current;
 
   useFrame(() => {
     if (floor) {
@@ -120,6 +123,25 @@ function MapFloor() {
     <group>
       {floor && (
         <group>
+          {/*  */}
+          <Portal
+            text={{
+              ready: "Watch",
+              loading: "Teleporting...",
+            }}
+            action={() => {
+              Now.avatarAt.set(0, 0, 30);
+              Now.goingTo.set(0, 0, 30);
+              let router = require("next/router").default;
+              router.push("/room/tv");
+            }}
+            zone={{
+              x: -13.972591588995757,
+              y: -3.144274046843904,
+              z: -19.502024572547064,
+            }}
+          ></Portal>
+
           <primitive object={floor}></primitive>
 
           <MapSimulation
