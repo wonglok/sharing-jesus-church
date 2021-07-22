@@ -316,8 +316,6 @@ export function MapScene() {
 
   return (
     <>
-      {/* <CameraRigFPAdaptive></CameraRigFPAdaptive> */}
-
       {/* <Bloomer></Bloomer> */}
       {/* <NoBloomRenderLoop></NoBloomRenderLoop> */}
       {/*
@@ -355,6 +353,9 @@ export function MapScene() {
           {/* </Floating> */}
         </group>
       </Suspense>
+
+      {/* <CameraRigFPAdaptive></CameraRigFPAdaptive> */}
+
       <CameraRig></CameraRig>
       <LookatMeCloud></LookatMeCloud>
     </>
