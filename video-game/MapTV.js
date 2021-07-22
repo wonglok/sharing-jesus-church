@@ -17,11 +17,8 @@ import {
   Color,
   DoubleSide,
   MeshStandardMaterial,
-  Object3D,
-  PerspectiveCamera,
   Scene,
   ShaderMaterial,
-  Vector3,
 } from "three";
 
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
@@ -41,10 +38,11 @@ import { ENMini } from "../vfx-runtime/ENMini";
 // import { Sphere } from "@react-three/drei";
 import { LightExpress } from "./ShadowLighting";
 
-import { RainbowClassic } from "./RainbowClassic";
+// import { RainbowClassic } from "./RainbowClassic";
 // import { CameraRigFirstPerson } from "./CameraRigFirstPerson";
 // import { CameraRigNipple } from "./CameraRigNipple";
-import { CameraRigFPAdaptive } from "./CameraRigFPAdaptive";
+// import { CameraRigFPAdaptive } from "./CameraRigFPAdaptive";
+
 import { CameraRigChurch } from "./CameraRigChurch";
 
 // https://www.youtube.com/watch?v=rLbX-4uTwyM
@@ -165,7 +163,6 @@ function MapFloor() {
 }
 
 function Youtube({ floor }) {
-  Now.makeKeyReactive("isUnLocked");
   let scale = 1;
   return (
     <>
@@ -176,6 +173,7 @@ function Youtube({ floor }) {
             height: `${216 * scale}px`,
             background: "white",
           }}
+          //
           rotation-x={-Math.PI / 2}
           position={[0, 0.05, -0.09]}
           scale={1 / scale}
@@ -185,7 +183,7 @@ function Youtube({ floor }) {
           <iframe
             width={`${334 * scale}`}
             height={`${216 * scale}`}
-            src="https://www.youtube.com/embed/ZN_OZjWZxKs"
+            src=""
             title="YouTube video player"
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
