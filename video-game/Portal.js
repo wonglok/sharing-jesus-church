@@ -3,7 +3,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Sphere } from "three";
 import { Color, DoubleSide, Vector3 } from "three";
-import { ShaderCubeChrome } from "../vfx-library/ShaderCubeChrome";
+// import { ShaderCubeChrome } from "../vfx-library/ShaderCubeChrome";
 import { Now } from "./Now";
 // import { lerp } from "";
 
@@ -24,6 +24,7 @@ export function Portal({
 
   // Login Zone
   // {x: 98.95287541944776, y: 4.206666727900821e-15, z: 0.668955153139894}
+
   const ring1 = useRef();
   const ring2 = useRef();
   const ring3 = useRef();
@@ -80,13 +81,11 @@ export function Portal({
               Math.PI * 0.12,
             ]}
           ></sphereBufferGeometry> */}
-          <torusGeometry args={[25 * 0.1, 1.5 * 0.1, 16, 100]}></torusGeometry>
-          <meshStandardMaterial
+          <torusGeometry args={[25 * 0.1, 1.5 * 0.1, 16, 50]}></torusGeometry>
+          <meshLambertMaterial
             side={DoubleSide}
             color="#ffffff"
-            metalness={1}
-            roughness={0.0}
-          ></meshStandardMaterial>
+          ></meshLambertMaterial>
 
           <mesh ref={ring2} scale={0.8}>
             {/* <sphereBufferGeometry
@@ -100,16 +99,13 @@ export function Portal({
                 Math.PI * 0.12,
               ]}
             ></sphereBufferGeometry> */}
-            <torusGeometry
-              args={[25 * 0.1, 1.5 * 0.1, 16, 100]}
-            ></torusGeometry>
 
-            <meshStandardMaterial
+            <torusGeometry args={[25 * 0.1, 1.5 * 0.1, 16, 50]}></torusGeometry>
+
+            <meshLambertMaterial
               side={DoubleSide}
               color="#ffffff"
-              metalness={1}
-              roughness={0.0}
-            ></meshStandardMaterial>
+            ></meshLambertMaterial>
 
             <mesh ref={ring1} scale={0.8}>
               {/* <sphereBufferGeometry
@@ -124,15 +120,13 @@ export function Portal({
                 ]}
               ></sphereBufferGeometry> */}
               <torusGeometry
-                args={[25 * 0.1, 1.5 * 0.1, 16, 100]}
+                args={[25 * 0.1, 1.5 * 0.1, 16, 50]}
               ></torusGeometry>
 
-              <meshStandardMaterial
+              <meshLambertMaterial
                 side={DoubleSide}
                 color="#ffffff"
-                metalness={1}
-                roughness={0.0}
-              ></meshStandardMaterial>
+              ></meshLambertMaterial>
             </mesh>
           </mesh>
         </mesh>
@@ -162,6 +156,7 @@ function CountDownText({
   // Hand.useChangeKey("overlay", () => {
   //   ticker.current = 0;
   // });
+  let lerp = require("three/src/math/MathUtils").lerp;
 
   let did = useRef(false);
   let charge = useRef(false);
@@ -201,7 +196,6 @@ function CountDownText({
       //
     }
 
-    let lerp = require("three/src/math/MathUtils").lerp;
     if (ring.current) {
       let s = 1 + (ticker.current / total) * 10.0 * magnify;
       let cs = ring.current.scale.x;
@@ -212,11 +206,10 @@ function CountDownText({
 
   return (
     <Text
-      position-y={5}
-      scale={80 * 2 * 0.2}
+      position-y={5 * 0.8}
+      scale={80 * 2 * 0.2 * 0.5}
       font={`/font/Cronos-Pro-Light_12448.ttf`}
       color={"#ffffff"}
-      onUpdate={(s) => {}}
       outlineWidth={0.001}
       outlineColor={"#000000"}
       //

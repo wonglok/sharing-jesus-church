@@ -110,7 +110,7 @@ function MapFloor() {
           <Portal
             text={{
               ready: "SkyCity",
-              loading: "Teleporting...",
+              loading: "Going...",
             }}
             action={() => {
               Now.avatarAt.set(0, 0, 30);
@@ -124,6 +124,7 @@ function MapFloor() {
               z: 26.86449735462861,
             }}
           ></Portal>
+
           <group position-x={-5}>
             <group position-x={10}>
               <LaydownGuy
@@ -148,7 +149,10 @@ function MapFloor() {
           </group>
 
           {/* <TV floor={floor}></TV> */}
-          <Youtube floor={floor}></Youtube>
+
+          <group frustumCulled={false}>
+            <Youtube floor={floor}></Youtube>
+          </group>
 
           <MapSimulation
             startAt={startAt}
