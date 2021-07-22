@@ -61,6 +61,10 @@ let Pages = [
     name: "tv",
     Component: dynamic(() => import("./MapTV.js").then((e) => e.MapScene)),
   },
+  {
+    name: "home",
+    Component: dynamic(() => import("./MapHome.js").then((e) => e.MapScene)),
+  },
   //
 
   // MapPlaceToChill
@@ -82,10 +86,6 @@ export function NewGame3D() {
 
     if (game) {
       setFound(game);
-    } else {
-      // setFound(false);
-      // router.push('/room/heavenly')
-      // fetch network or stuff...
     }
   }, [route.query.roomID]);
   return (

@@ -1,4 +1,11 @@
-import { Html, Plane, useFBO, useFBX, useGLTF } from "@react-three/drei";
+import {
+  Html,
+  Plane,
+  useFBO,
+  useFBX,
+  useGLTF,
+  useTexture,
+} from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { EnvMap } from "./EnvMap";
@@ -17,8 +24,11 @@ import {
   Color,
   DoubleSide,
   MeshStandardMaterial,
+  Object3D,
+  RepeatWrapping,
   Scene,
   ShaderMaterial,
+  TextureLoader,
 } from "three";
 
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
@@ -43,14 +53,13 @@ import { LightExpress } from "./ShadowLighting";
 // import { CameraRigNipple } from "./CameraRigNipple";
 // import { CameraRigFPAdaptive } from "./CameraRigFPAdaptive";
 
-import { CameraRigChurch } from "./CameraRigChurch";
+import { CameraRig } from "./CameraRig";
 
 // https://www.youtube.com/watch?v=rLbX-4uTwyM
 
 function MapFloor() {
   let { scene } = useThree();
-
-  let map = useGLTF("/map/tv.glb");
+  let map = useGLTF("/map/home.glb");
 
   useEffect(() => {
     //
@@ -62,21 +71,27 @@ function MapFloor() {
     };
   });
 
+  let grassNormal = useTexture(`/texture/normal-grass.jpg`);
+
   let { floor } = useMemo(() => {
     let src = SkeletonUtils.clone(map.scene);
 
-    let scale = 4;
+    let scale = 1;
     src.scale.set(scale, scale, scale);
-    src.rotation.y = Math.PI * 0.0;
 
-    src.position.y = -2 * scale;
+    src.position.y = -1 * scale;
     src.traverse((item) => {
       if (item.material) {
         item.material.side = DoubleSide;
       }
-      if (item.name === "wallpaper") {
-        item.material.color = new Color("#ffffff");
-        item.material.metalness = 1.0;
+      if (item.material && item.name.toLowerCase() === "circle_1") {
+        let texture = grassNormal;
+        item.material.normalMap = texture;
+
+        texture.wrapS = RepeatWrapping;
+        texture.wrapT = RepeatWrapping;
+        texture.repeat.set(15, 15);
+        //
       }
     });
     return { floor: src };
@@ -105,31 +120,8 @@ function MapFloor() {
         <group>
           <primitive object={floor}></primitive>
 
-          <group position-x={-5}>
-            <group position-x={10}>
-              <LaydownGuy
-                poseURL={`/chibi/avatar-rpm/watchtv/lay-1.fbx`}
-              ></LaydownGuy>
-            </group>
-            <group position-x={-10}>
-              <LaydownGuy
-                poseURL={`/chibi/avatar-rpm/watchtv/sit-1.fbx`}
-              ></LaydownGuy>
-            </group>
-            <group position-x={0}>
-              <LaydownGuy
-                poseURL={`/chibi/avatar-rpm/watchtv/lay-2.fbx`}
-              ></LaydownGuy>
-            </group>
-            <group position-x={20}>
-              <LaydownGuy
-                poseURL={`/chibi/avatar-rpm/watchtv/sit-2.fbx`}
-              ></LaydownGuy>
-            </group>
-          </group>
-
           {/* <TV floor={floor}></TV> */}
-          <Youtube floor={floor}></Youtube>
+          {/* <Youtube floor={floor}></Youtube> */}
 
           <MapSimulation
             startAt={startAt}
@@ -144,7 +136,7 @@ function MapFloor() {
               <MainAvatarLoader></MainAvatarLoader>
             </group>
 
-            <MyWiggles></MyWiggles>
+            {/* <MyWiggles></MyWiggles> */}
 
             <Suspense fallback={null}>
               <GameDataReceiver></GameDataReceiver>
@@ -162,116 +154,116 @@ function MapFloor() {
   );
 }
 
-function Youtube({ floor }) {
-  let scale = 1;
-  return (
-    <>
-      {createPortal(
-        <Html
-          style={{
-            width: `${334 * scale}px`,
-            height: `${216 * scale}px`,
-            background: "white",
-          }}
-          //
-          rotation-x={-Math.PI / 2}
-          position={[0, 0.05, -0.09]}
-          scale={1 / scale}
-          transform
-          occlude
-        >
-          <iframe
-            width={`${334 * scale}`}
-            height={`${216 * scale}`}
-            src=""
-            title="YouTube video player"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
-        </Html>,
-        floor.getObjectByName("wallpaper")
-      )}
-    </>
-  );
-}
+// function Youtube({ floor }) {
+//   let scale = 1;
+//   return (
+//     <>
+//       {createPortal(
+//         <Html
+//           style={{
+//             width: `${334 * scale}px`,
+//             height: `${216 * scale}px`,
+//             background: "white",
+//           }}
+//           //
+//           rotation-x={-Math.PI / 2}
+//           position={[0, 0.05, -0.09]}
+//           scale={1 / scale}
+//           transform
+//           occlude
+//         >
+//           <iframe
+//             width={`${334 * scale}`}
+//             height={`${216 * scale}`}
+//             src=""
+//             title="YouTube video player"
+//             frameBorder="0"
+//             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+//             allowFullScreen
+//           ></iframe>
+//         </Html>,
+//         floor.getObjectByName("wallpaper") || new Object3D()
+//       )}
+//     </>
+//   );
+// }
 
-function TV({ floor }) {
-  Now.makeKeyReactive("isUnLocked");
-  return (
-    <>
-      {createPortal(
-        !Now.isUnLocked ? (
-          <mesh
-            geometry={floor.getObjectByName("wallpaper").geometry.clone()}
-            rotation-x={(-Math.PI / 2) * 0.0}
-            position={[0, 0.05, 0.0]}
-          >
-            <meshBasicMaterial></meshBasicMaterial>
-          </mesh>
-        ) : (
-          <group></group>
-        ),
-        floor.getObjectByName("wallpaper")
-      )}
-    </>
-  );
-}
+// function TV({ floor }) {
+//   Now.makeKeyReactive("isUnLocked");
+//   return (
+//     <>
+//       {createPortal(
+//         !Now.isUnLocked ? (
+//           <mesh
+//             geometry={floor.getObjectByName("wallpaper").geometry.clone()}
+//             rotation-x={(-Math.PI / 2) * 0.0}
+//             position={[0, 0.05, 0.0]}
+//           >
+//             <meshBasicMaterial></meshBasicMaterial>
+//           </mesh>
+//         ) : (
+//           <group></group>
+//         ),
+//         floor.getObjectByName("wallpaper") || new Object3D()
+//       )}
+//     </>
+//   );
+// }
 
-function LaydownGuy({ poseURL = `/chibi/avatar-rpm/watchtv/lay-1.fbx` }) {
-  let raw = useFBX(`/chibi/avatar-rpm/base-rig-for-rpm.fbx`);
-  let person = useMemo(() => {
-    raw.traverse((it) => {
-      if (it.material) {
-        it.material = new MeshStandardMaterial({
-          metalness: 0.8,
-          roughness: 0.4,
-        });
-        it.frustumCulled = false;
-      }
-    });
+// function LaydownGuy({ poseURL = `/chibi/avatar-rpm/watchtv/lay-1.fbx` }) {
+//   let raw = useFBX(`/chibi/avatar-rpm/base-rig-for-rpm.fbx`);
+//   let person = useMemo(() => {
+//     raw.traverse((it) => {
+//       if (it.material) {
+//         it.material = new MeshStandardMaterial({
+//           metalness: 0.8,
+//           roughness: 0.4,
+//         });
+//         it.frustumCulled = false;
+//       }
+//     });
 
-    return SkeletonUtils.clone(raw);
-  }, []);
-  let lay = useFBX(poseURL);
+//     return SkeletonUtils.clone(raw);
+//   }, []);
+//   let lay = useFBX(poseURL);
 
-  let refMixer = useRef();
-  useEffect(() => {
-    let mixer;
-    refMixer.current = mixer = new AnimationMixer(person);
+//   let refMixer = useRef();
+//   useEffect(() => {
+//     let mixer;
+//     refMixer.current = mixer = new AnimationMixer(person);
 
-    let act = mixer.clipAction(lay.animations[0]);
-    act.play();
-  }, []);
+//     let act = mixer.clipAction(lay.animations[0]);
+//     act.play();
+//   }, []);
 
-  useFrame((st, dt) => {
-    if (refMixer.current) {
-      refMixer.current.update(dt);
-    }
-  });
+//   useFrame((st, dt) => {
+//     if (refMixer.current) {
+//       refMixer.current.update(dt);
+//     }
+//   });
 
-  return (
-    <group scale={8} position={[0, -7, 0]} rotation={[0, Math.PI, 0]}>
-      <primitive object={person} />
-    </group>
-  );
-}
+//   return (
+//     <group scale={8} position={[0, -7, 0]} rotation={[0, Math.PI, 0]}>
+//       <primitive object={person} />
+//     </group>
+//   );
+// }
 
-function Floating({ children }) {
-  let ref = useRef();
-  useEffect(() => {
-    //
-  }, []);
-  let time = 0;
-  useFrame((st, dt) => {
-    if (dt >= 1 / 60) {
-      dt = 1 / 60;
-    }
-    time += dt;
-    ref.current.position.y = Math.sin(time) * 5.0;
-  });
-  return <group ref={ref}>{children}</group>;
-}
+// function Floating({ children }) {
+//   let ref = useRef();
+//   useEffect(() => {
+//     //
+//   }, []);
+//   let time = 0;
+//   useFrame((st, dt) => {
+//     if (dt >= 1 / 60) {
+//       dt = 1 / 60;
+//     }
+//     time += dt;
+//     ref.current.position.y = Math.sin(time) * 5.0;
+//   });
+//   return <group ref={ref}>{children}</group>;
+// }
 
 function MyWiggles() {
   let three = useThree();
@@ -363,43 +355,43 @@ export function MapScene() {
           {/* </Floating> */}
         </group>
       </Suspense>
-      <CameraRigChurch></CameraRigChurch>
+      <CameraRig></CameraRig>
       <LookatMeCloud></LookatMeCloud>
     </>
   );
 }
 
-function Cross() {
-  let fbx = useFBX(`/church/holy-cross.fbx`);
+// function Cross() {
+//   let fbx = useFBX(`/church/holy-cross.fbx`);
 
-  useEffect(() => {
-    fbx.traverse((it) => {
-      if (it.material) {
-        // enableBloom(it);
-        // it.castShadow = true;
-        it.material.color = new Color("#121212");
+//   useEffect(() => {
+//     fbx.traverse((it) => {
+//       if (it.material) {
+//         // enableBloom(it);
+//         // it.castShadow = true;
+//         it.material.color = new Color("#121212");
 
-        if (it.name === "BezierCurve") {
-          it.visible = false;
-        }
-      }
-    });
-  }, [fbx]);
+//         if (it.name === "BezierCurve") {
+//           it.visible = false;
+//         }
+//       }
+//     });
+//   }, [fbx]);
 
-  //
+//   //
 
-  return (
-    <group scale={0.09}>
-      <primitive
-        position-x={-15}
-        position-y={15}
-        rotation-y={Math.PI * (0.25 + 0.5 + 0.1)}
-        rotation-x={Math.PI * -0.5}
-        object={fbx}
-      ></primitive>
-    </group>
-  );
-}
+//   return (
+//     <group scale={0.09}>
+//       <primitive
+//         position-x={-15}
+//         position-y={15}
+//         rotation-y={Math.PI * (0.25 + 0.5 + 0.1)}
+//         rotation-x={Math.PI * -0.5}
+//         object={fbx}
+//       ></primitive>
+//     </group>
+//   );
+// }
 
 function LookatMeCloud() {
   let { gl, camera, scene } = useThree();
@@ -607,7 +599,7 @@ function LookatMeCloud() {
       )}
 
       {createPortal(
-        <mesh frustumCulled={false} scale={30} position-z={-2000}>
+        <mesh frustumCulled={false} scale={50} position-z={-2000}>
           <planeBufferGeometry args={[100, 100]}></planeBufferGeometry>
           <meshBasicMaterial
             transparent={true}
