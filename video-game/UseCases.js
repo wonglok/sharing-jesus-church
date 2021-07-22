@@ -186,6 +186,8 @@ export function MapSimulation({
           }
         }
       }
+
+      return hit;
     };
     let h = {
       click: (e) => {
@@ -206,7 +208,10 @@ export function MapSimulation({
         //   console.log(hit.point);
         //   Now.goingTo.copy(hit.point);
         // }
-        goFnc();
+        let hit = goFnc();
+        if (hit) {
+          console.log(hit);
+        }
       },
       goDown: (e) => {
         x = e.clientX;
