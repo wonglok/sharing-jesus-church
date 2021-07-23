@@ -74,6 +74,8 @@ function MapFloor() {
     src.position.y = -2;
     src.traverse((item) => {
       if (item.material) {
+        // item.geometry.computeVertexNormals();
+        // item.castShadow = true;
         item.receiveShadow = true;
         item.userData.useRainbow = true;
         item.material.side = DoubleSide;
@@ -315,17 +317,20 @@ export function MapScene() {
 }
 
 function Cross() {
-  let fbx = useFBX(`/church/holy-cross.fbx`);
+  let rawfbx = useFBX(`/church/holy-cross.fbx`);
 
-  useEffect(() => {
-    fbx.traverse((it) => {
+  let fbx = useMemo(() => {
+    let src = SkeletonUtils.clone(rawfbx);
+    src.traverse((it) => {
       if (it.material) {
         // enableBloom(it);
-        // it.castShadow = true;
+        it.castShadow = true;
         it.material.color = new Color("#121212");
       }
     });
-  }, [fbx]);
+    return src;
+  }, [rawfbx]);
+
   return (
     <group scale={0.09}>
       <primitive
@@ -499,6 +504,9 @@ function LookatMeCloud() {
       `,
     });
   });
+
+  //
+
   let fbo = useFBO(256, 256);
 
   useEffect(() => {

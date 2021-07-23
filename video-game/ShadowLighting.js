@@ -13,6 +13,7 @@ export function LightExpress({ lightPosition = [0, 150, 10] }) {
   let { get } = useThree();
   useEffect(() => {
     get().gl.shadowMap.enabled = true;
+    get().gl.shadowMap.type = PCFSoftShadowMap;
 
     //Create a PointLight and turn on shadows for the light
     const light = new PointLight(0xffffff, 1, 2000);

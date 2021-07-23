@@ -73,6 +73,10 @@ function MapFloor() {
 
     src.position.y = -2 * scale;
     src.traverse((item) => {
+      if (item) {
+        item.receiveShadow = true;
+      }
+
       if (item.material) {
         item.material = new MeshLambertMaterial({
           color: item.material.color,
@@ -172,7 +176,7 @@ function MapFloor() {
               <MainAvatarLoader></MainAvatarLoader>
             </group>
 
-            <MyWiggles></MyWiggles>
+            {/* <MyWiggles></MyWiggles> */}
 
             <Suspense fallback={null}>
               <GameDataReceiver></GameDataReceiver>
@@ -359,6 +363,7 @@ function LaydownGuy({ poseURL = `/chibi/ChibiBase-rigged.fbx` }) {
   let person = useMemo(() => {
     raw.traverse((it) => {
       if (it.material) {
+        it.castShadow = true;
         it.material = new MeshLambertMaterial({
           side: DoubleSide,
         });
