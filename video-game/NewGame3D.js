@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import router, { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 // import { PCFShadowMap, PCFSoftShadowMap } from "three";
 import { setup, firebase } from "./AppFirebase.js";
@@ -114,6 +114,8 @@ export function NewGame3D() {
       setFound(game);
     }
   }, [route.query.roomID]);
+
+  //
   return (
     <>
       <div className="w-full h-full">
@@ -123,9 +125,30 @@ export function NewGame3D() {
               (typeof window !== "undefined" && window.devicePixelRatio) || 1.0
             }
           >
-            {/* <MyScene> */}
-            <found.Component></found.Component>
-            {/* </MyScene> */}
+            <MyScene>
+              <Suspense
+                fallback={
+                  <Text
+                    rotation-x={Math.PI * -0.25}
+                    position={[0, 1, 0]}
+                    color={"#000000"}
+                    fontSize={1.0}
+                    maxWidth={200}
+                    lineHeight={1}
+                    textAlign={"center"}
+                    font="/font/Cronos-Pro-Light_12448.ttf"
+                    anchorX="center"
+                    anchorY="middle"
+                    outlineWidth={0.04}
+                    outlineColor="#ffffff"
+                  >
+                    Loading...
+                  </Text>
+                }
+              >
+                <found.Component></found.Component>
+              </Suspense>
+            </MyScene>
           </Canvas>
         ) : found === null ? (
           <div className="w-full h-full flex items-center justify-center">

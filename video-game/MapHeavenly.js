@@ -273,7 +273,7 @@ export function MapScene() {
     <>
       {/* <CameraRigFirstPerson></CameraRigFirstPerson> */}
       {/* <CameraRig></CameraRig> */}
-      <CameraRig zoomInit={4.5}></CameraRig>
+      <CameraRig zoomInit={6.5}></CameraRig>
 
       {/* <Bloomer></Bloomer> */}
       {/* <NoBloomRenderLoop></NoBloomRenderLoop> */}
