@@ -59,7 +59,7 @@ export function MapSimulation({
     throw new Error("no floor");
   }
 
-  let { gl, camera } = useThree();
+  let { gl, camera, get } = useThree();
 
   let colliderRef = useRef();
   useEffect(() => {
@@ -94,7 +94,8 @@ export function MapSimulation({
         cloned.applyMatrix4(c.matrixWorld);
 
         for (const key in cloned.attributes) {
-          if (key !== "position") {
+          if (key === "position" || key === "index") {
+          } else {
             cloned.deleteAttribute(key);
           }
         }
@@ -107,10 +108,18 @@ export function MapSimulation({
     // import { BufferGeometryUtils } from "three/examples/jsm/utils/BufferGeometryUtils";
     //
 
-    const mergedGeometry = BufferGeometryUtils.mergeBufferGeometries(
+    let mergedGeometry = BufferGeometryUtils.mergeBufferGeometries(
       geometries,
       false
     );
+
+    // let SimplifyModifier =
+    //   require("three/examples/jsm/modifiers/SimplifyModifier").SimplifyModifier;
+    // const modifier = new SimplifyModifier();
+    // let smaller = modifier.modify(
+    //   mergedGeometry,
+    //   Math.floor(mergedGeometry.attributes.position.count * 1)
+    // );
 
     mergedGeometry.boundsTree = new MeshBVH(mergedGeometry);
 
@@ -130,30 +139,6 @@ export function MapSimulation({
   }, [floor]);
 
   let collider = colliderRef.current;
-
-  /*
-
-  const controls = new PointerLockControls(camera, gl.domElement);
-  camera.position.copy(Now.avatarAt);
-  camera.position.y += 10;
-  camera.position.z += 10;
-
-  // add event listener to show/hide a UI (e.g. the game's menu)
-
-  // camera.rotation;
-  controls.addEventListener("lock", function () {
-    // menu.style.display = "none";
-  });
-
-  controls.addEventListener("unlock", function () {
-    // menu.style.display = "block";
-  });
-
-  gl.domElement.addEventListener("click", () => {
-    controls.lock();
-  });
-
-  */
 
   useEffect(() => {
     if (!collider) {

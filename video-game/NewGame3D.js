@@ -7,6 +7,8 @@ import { setup, firebase } from "./AppFirebase.js";
 import { Now } from "./Now.js";
 import { UIWatchTV } from "./UIWatchTV.js";
 import { useAutoEvent } from "../vfx-runtime/ENUtils.js";
+import { Text } from "@react-three/drei";
+import { getGPUTier } from "detect-gpu";
 
 function MyScene({ children }) {
   return (
@@ -99,6 +101,7 @@ let Pages = [
 export function NewGame3D() {
   let route = useRouter();
   let [found, setFound] = useState(null);
+  let [dpr, setDPR] = useState([1, 3]);
 
   //
   useEffect(() => {
@@ -121,12 +124,38 @@ export function NewGame3D() {
       <div className="w-full h-full">
         {typeof found === "object" && found !== null ? (
           <Canvas
-            dpr={
-              (typeof window !== "undefined" && window.devicePixelRatio) || 1.0
-            }
+            // dpr={
+            //   (typeof window !== "undefined" && window.devicePixelRatio) || 1.0
+            // }
+
+            onCreated={({ gl }) => {
+              //
+              getGPUTier({ glContext: gl.getContext() }).then((v) => {
+                // ipad
+                if (v.gpu === "apple a9x gpu") {
+                  setDPR([1, 1]);
+                  return;
+                }
+                if (v.fps < 30) {
+                  setDPR([1, 1]);
+                  return;
+                }
+
+                if (v.tier >= 3) {
+                  setDPR([1, 3]);
+                } else if (v.tier >= 2) {
+                  setDPR([1, 2]);
+                } else if (v.tier >= 1) {
+                  setDPR([1, 1]);
+                } else if (v.tier < 1) {
+                  setDPR([1, 0.75]);
+                }
+              });
+            }}
+            dpr={dpr}
           >
-            <MyScene>
-              <Suspense
+            {/* <MyScene> */}
+            {/* <Suspense
                 fallback={
                   <Text
                     rotation-x={Math.PI * -0.25}
@@ -145,10 +174,10 @@ export function NewGame3D() {
                     Loading...
                   </Text>
                 }
-              >
-                <found.Component></found.Component>
-              </Suspense>
-            </MyScene>
+              > */}
+            <found.Component></found.Component>
+            {/* </Suspense> */}
+            {/* </MyScene> */}
           </Canvas>
         ) : found === null ? (
           <div className="w-full h-full flex items-center justify-center">

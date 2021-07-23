@@ -7,6 +7,7 @@ import {
 
   //
   useGLTF,
+  Text,
 } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { SkeletonUtils } from "three-stdlib";
@@ -23,6 +24,7 @@ import {
 import {
   Color,
   DoubleSide,
+  MeshBasicMaterial,
   MeshLambertMaterial,
   MeshPhongMaterial,
   MeshStandardMaterial,
@@ -81,10 +83,10 @@ function MapFloor() {
     shadow.position.y = -1 * scale;
     shadow.traverse((item) => {
       if (item.material) {
-        item.material = new MeshStandardMaterial({
+        item.material = new MeshLambertMaterial({
           color: item.material.color,
         });
-        item.castShadow = true;
+        // item.castShadow = true;
         item.receiveShadow = true;
       }
     });

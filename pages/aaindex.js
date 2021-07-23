@@ -19,10 +19,10 @@ export async function getStaticProps(context) {
 export default function IndexPage({ graphA }) {
   let ref = useRef();
 
-  let [dpr, setDPR] = useState([1, 3]);
   useEffect(() => {
     return InteractionUI.fixTouchScreen({ target: ref.current });
   }, []);
+  let [dpr, setDPR] = useState([1, 3]);
 
   return (
     <div ref={ref} className="w-full h-full">
