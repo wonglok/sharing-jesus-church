@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { setup, firebase } from "./AppFirebase.js";
 import { Now } from "./Now.js";
 import { UIWatchTV } from "./UIWatchTV.js";
+import { useAutoEvent } from "../vfx-runtime/ENUtils.js";
 
 function MyScene({ children }) {
   return (
@@ -144,6 +145,12 @@ export function NewGame3D() {
 
 function Overlays() {
   Now.makeKeyReactive(`overlay`);
+
+  useAutoEvent("keydown", (ev) => {
+    if (ev.key.toLowerCase() === "escape") {
+      Now.overlay = "";
+    }
+  });
   return (
     <>
       {Now.overlay === "watch" && (

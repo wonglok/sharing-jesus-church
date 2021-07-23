@@ -19,10 +19,10 @@ export function LightExpress({ lightPosition = [0, 50, 50] }) {
     ref.current.add(light);
 
     //Set up shadow properties for the light
-    light.shadow.mapSize.width = 512; // default
-    light.shadow.mapSize.height = 512; // default
+    light.shadow.mapSize.width = 256; // default
+    light.shadow.mapSize.height = 256; // default
     light.shadow.camera.near = 0.5; // default
-    light.shadow.camera.far = 500; // default
+    light.shadow.camera.far = 1024; // default
 
     return () => {
       if (ref.current) {

@@ -69,18 +69,18 @@ export function Portal({
           magnify={magnify}
         ></CountDownText>
 
-        <mesh ref={ring3}>
+        <mesh castShadow={true} ref={ring3}>
           <torusGeometry args={[25 * 0.15, 1.5 * 0.15, 16, 50]}></torusGeometry>
           <meshLambertMaterial color="#ffffff"></meshLambertMaterial>
 
-          <mesh ref={ring2} scale={0.8}>
+          <mesh castShadow={true} ref={ring2} scale={0.8}>
             <torusGeometry
               args={[25 * 0.15, 1.5 * 0.15, 16, 50]}
             ></torusGeometry>
 
             <meshLambertMaterial color="#ffffff"></meshLambertMaterial>
 
-            <mesh ref={ring1} scale={0.8}>
+            <mesh castShadow={true} ref={ring1} scale={0.8}>
               <torusGeometry
                 args={[25 * 0.15, 1.5 * 0.15, 16, 50]}
               ></torusGeometry>

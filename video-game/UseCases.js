@@ -583,7 +583,7 @@ export function MainAvatarLogic({ profile, url }) {
   return (
     <group ref={ref}>
       <group>
-        <primitive name="avatar" object={model}></primitive>
+        <primitive castShadow={true} name="avatar" object={model}></primitive>
       </group>
     </group>
   );
@@ -949,7 +949,7 @@ export function OtherAvatarDisplay({ uid, roomID }) {
   return (
     <group>
       <group scale={0.0075} ref={gpRef}>
-        <primitive object={chibi}></primitive>
+        <primitive castShadow={true} object={chibi}></primitive>
       </group>
     </group>
   );

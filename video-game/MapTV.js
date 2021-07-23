@@ -1,4 +1,4 @@
-import { Html, Plane, useFBO, useFBX, useGLTF } from "@react-three/drei";
+import { Html, Plane, Text, useFBO, useFBX, useGLTF } from "@react-three/drei";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { EnvMap } from "./EnvMap";
@@ -226,10 +226,98 @@ function MapFloor() {
 // }
 
 function TV({ floor }) {
+  let { get } = useThree();
+  let mat = useMemo(() => {
+    let { camera } = get();
+    return new ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        uCamPos: { value: camera.position },
+        uCamRot: { value: camera.rotation },
+      },
+      transparent: true,
+      depthWrite: false,
+      // blending: AdditiveBlending,
+      vertexShader: `
+        varying vec2 vUv;
+        varying vec3 vPos;
+        varying vec3 vCamPos;
+        uniform vec3 uCamPos;
+
+        void main (void) {
+          //
+          vec4 iPos = vec4(position, 1.0);
+          gl_Position = projectionMatrix * modelViewMatrix * iPos;
+
+          vCamPos = uCamPos;
+          vPos = iPos.xyz;
+          vUv = uv;
+        }
+      `,
+
+      fragmentShader: `
+
+        uniform float time;
+        varying vec2 vUv;
+        varying vec3 vCamPos;
+        varying vec3 vPos;
+        uniform vec3 uCamRot;
+
+        const mat2 m = mat2( 0.80,  0.60, -0.60,  0.80 );
+
+          float noise( in vec2 p ) {
+            return sin(p.x)*sin(p.y);
+          }
+
+          float fbm4( vec2 p ) {
+              float f = 0.0;
+              f += 0.5000 * noise( p ); p = m * p * 2.02;
+              f += 0.2500 * noise( p ); p = m * p * 2.03;
+              f += 0.1250 * noise( p ); p = m * p * 2.01;
+              f += 0.0625 * noise( p );
+              return f / 0.9375;
+          }
+
+          float fbm6( vec2 p ) {
+              float f = 0.0;
+              f += 0.500000*(0.5 + 0.5 * noise( p )); p = m*p*2.02;
+              f += 0.250000*(0.5 + 0.5 * noise( p )); p = m*p*2.03;
+              f += 0.125000*(0.5 + 0.5 * noise( p )); p = m*p*2.01;
+              f += 0.062500*(0.5 + 0.5 * noise( p )); p = m*p*2.04;
+              f += 0.031250*(0.5 + 0.5 * noise( p )); p = m*p*2.01;
+              f += 0.015625*(0.5 + 0.5 * noise( p ));
+              return f/0.96875;
+          }
+
+          float pattern (vec2 p) {
+            float vout = fbm4( p + time + fbm6(  p + fbm4( p + time )) );
+            return abs(vout);
+          }
+
+        void main (void) {
+          gl_FragColor = vec4(vec3(
+            1.0 - pattern(vUv * 1.70123 + -0.17 * cos(time * 0.05)),
+            1.0 - pattern(vUv * 1.70123 +  0.0 * cos(time * 0.05)),
+            1.0 - pattern(vUv * 1.70123 +  0.17 * cos(time * 0.05))
+          ), 1.0);
+        }
+      `,
+    });
+  });
+
+  useFrame((st, dt) => {
+    //
+    //
+    mat.uniforms.time.value += dt;
+    //
+    //
+  });
+
   return (
     <>
       {createPortal(
         <mesh
+          material={mat}
           onPointerDown={() => {
             Now.overlay = "watch";
           }}
@@ -243,7 +331,22 @@ function TV({ floor }) {
           rotation-x={(-Math.PI / 2) * 0.0}
           position={[0, 0.05, 0.0]}
         >
-          <meshBasicMaterial></meshBasicMaterial>
+          <Text
+            rotation-x={Math.PI * -0.5}
+            position={[0, 1, 0]}
+            color={"#000000"}
+            fontSize={1.0}
+            maxWidth={200}
+            lineHeight={1}
+            textAlign={"center"}
+            font="/font/Cronos-Pro-Light_12448.ttf"
+            anchorX="center"
+            anchorY="middle"
+            outlineWidth={0.04}
+            outlineColor="#ffffff"
+          >
+            Click to Watch
+          </Text>
         </mesh>,
         floor.getObjectByName("wallpaper")
       )}
@@ -326,20 +429,6 @@ function MyWiggles() {
     mini.work();
   });
 
-  // useEffect(() => {
-  //   new WiggleTrackerObject({
-  //     node: mini,
-  //   });
-
-  //   let tracker = new Vector3().copy(Now.avatarAt);
-  //   mini.onLoop(() => {
-  //     tracker.copy(Now.avatarAt);
-  //     tracker.y += 2.3;
-  //   });
-
-  //   mini.set("tracker", tracker);
-  // }, []);
-
   return null;
 }
 
@@ -356,17 +445,6 @@ export function MapScene() {
 
   return (
     <>
-      {/* <CameraRigFPAdaptive></CameraRigFPAdaptive> */}
-
-      {/* <Bloomer></Bloomer> */}
-      {/* <NoBloomRenderLoop></NoBloomRenderLoop> */}
-      {/*
-      <directionalLight
-        intensity={0.7}
-        position={[10, 10, 10]}
-      ></directionalLight>
-      */}
-
       <directionalLight
         intensity={0.15}
         position={[0, 10, 0]}
