@@ -346,7 +346,7 @@ export function MapScene() {
       {/*  */}
       {/*  */}
       {/* <Bloomer></Bloomer> */}
-      <NoBloomRenderLoop></NoBloomRenderLoop>
+      {/* <NoBloomRenderLoop></NoBloomRenderLoop> */}
       {/*
       <directionalLight
         intensity={0.7}

@@ -15,6 +15,7 @@ import {
   Camera,
   Color,
   DoubleSide,
+  MeshStandardMaterial,
   Object3D,
   PerspectiveCamera,
   Scene,
@@ -74,10 +75,15 @@ function MapFloor() {
     src.position.y = -2;
     src.traverse((item) => {
       if (item.material) {
+        item.material = new MeshStandardMaterial({
+          metalness: 0.5,
+          roughness: 0.5,
+        });
+
         // item.geometry.computeVertexNormals();
         // item.castShadow = true;
-        item.receiveShadow = true;
         item.userData.useRainbow = true;
+        item.receiveShadow = true;
         item.material.side = DoubleSide;
       }
     });
