@@ -1,24 +1,24 @@
 import { Canvas } from "@react-three/fiber";
-import router, { useRouter } from "next/router";
-import { Suspense, useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 // import { PCFShadowMap, PCFSoftShadowMap } from "three";
-import { setup, firebase } from "./AppFirebase.js";
+import { setup } from "./AppFirebase.js";
 import { Now } from "./Now.js";
 import { UIWatchTV } from "./UIWatchTV.js";
 import { useAutoEvent } from "../vfx-runtime/ENUtils.js";
-import { Text } from "@react-three/drei";
+// import { Text } from "@react-three/drei";
 import { getGPUTier } from "detect-gpu";
 
-function MyScene({ children }) {
-  return (
-    <group>
-      {/*  */}
-      {children}
-      {/*  */}
-    </group>
-  );
-}
+// function MyScene({ children }) {
+//   return (
+//     <group>
+//       {/*  */}
+//       {children}
+//       {/*  */}
+//     </group>
+//   );
+// }
 
 let Pages = [
   {
