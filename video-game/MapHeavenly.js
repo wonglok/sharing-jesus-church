@@ -136,9 +136,45 @@ function MapFloor() {
               router.push("/room/tv");
             }}
             zone={{
-              x: -13.972591588995757,
+              x: -10.972591588995757,
               y: -3.144274046843904,
-              z: -19.502024572547064,
+              z: -20.502024572547064,
+            }}
+          ></Portal>
+
+          <Portal
+            text={{
+              ready: "My Home",
+              loading: "Teleporting...",
+            }}
+            action={() => {
+              Now.avatarAt.set(0, 0, 30);
+              Now.goingTo.set(0, 0, 30);
+              let router = require("next/router").default;
+              router.push("/room/home");
+            }}
+            zone={{
+              x: 10.972591588995757,
+              y: -3.144274046843904,
+              z: -20.502024572547064,
+            }}
+          ></Portal>
+
+          <Portal
+            text={{
+              ready: "The Rest of Jesus",
+              loading: "Teleporting...",
+            }}
+            action={() => {
+              Now.avatarAt.set(0, 0, 30);
+              Now.goingTo.set(0, 0, 30);
+              let router = require("next/router").default;
+              router.push("/room/chill");
+            }}
+            zone={{
+              x: -100.94987587431878,
+              y: 19.736615607334585,
+              z: 0.8931245035310837,
             }}
           ></Portal>
 
@@ -517,7 +553,9 @@ function LookatMeCloud() {
     return () => {
       scene.remove(camera);
     };
-  }); //
+  });
+
+  //
   return (
     <group>
       {createPortal(
@@ -528,7 +566,7 @@ function LookatMeCloud() {
       )}
 
       {createPortal(
-        <mesh frustumCulled={false} scale={15} position-z={-1000}>
+        <mesh frustumCulled={false} scale={30} position-z={-1000}>
           <planeBufferGeometry args={[100, 100]}></planeBufferGeometry>
           <meshBasicMaterial
             transparent={true}

@@ -47,6 +47,7 @@ import { Sphere } from "@react-three/drei";
 import { CameraRigOrbit } from "./CameraRigOrbit";
 import { CameraRigOrbitBirdView } from "./CameraRigOrbitBirdView";
 import { LightExpress, ShadowFloor } from "./ShadowLighting";
+import { Portal } from "./Portal";
 
 function MapFloor() {
   let { gl, scene } = useThree();
@@ -145,6 +146,29 @@ function MapFloor() {
       {floor && (
         <>
           <primitive object={floor}></primitive>
+
+          <Portal
+            text={{
+              ready: "SkyCity",
+              loading: "Teleporting...",
+            }}
+            action={() => {
+              let to = {
+                x: -100.94987587431878,
+                y: 19.736615607334585,
+                z: 0.8931245035310837,
+              };
+              Now.avatarAt.copy(to);
+              Now.goingTo.copy(to);
+              let router = require("next/router").default;
+              router.push("/room/heavenly");
+            }}
+            zone={{
+              x: 25.787964312387036,
+              y: -1.9999917996758967,
+              z: 45.45996913120548,
+            }}
+          ></Portal>
 
           <MapSimulation
             startAt={startAt}

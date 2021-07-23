@@ -54,6 +54,7 @@ import { LightExpress } from "./ShadowLighting";
 // import { CameraRigFPAdaptive } from "./CameraRigFPAdaptive";
 
 import { CameraRig } from "./CameraRig";
+import { Portal } from "./Portal";
 
 // https://www.youtube.com/watch?v=rLbX-4uTwyM
 
@@ -122,6 +123,24 @@ function MapFloor() {
 
           {/* <TV floor={floor}></TV> */}
           {/* <Youtube floor={floor}></Youtube> */}
+
+          <Portal
+            text={{
+              ready: "SkyCity",
+              loading: "Teleporting...",
+            }}
+            action={() => {
+              Now.avatarAt.set(0, 0, 30);
+              Now.goingTo.set(0, 0, 30);
+              let router = require("next/router").default;
+              router.push("/room/heavenly");
+            }}
+            zone={{
+              x: -0.6356034957476053,
+              y: -28.59659129339514,
+              z: -2.7695245453934163,
+            }}
+          ></Portal>
 
           <MapSimulation
             startAt={startAt}
