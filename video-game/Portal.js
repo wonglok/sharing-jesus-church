@@ -59,7 +59,7 @@ export function Portal({
   });
 
   return (
-    <group position-y={3.5}>
+    <group position-y={5.5}>
       <group position-x={zone.x} position-y={zone.y} position-z={zone.z}>
         <CountDownText
           ring={ring3}
