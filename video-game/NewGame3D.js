@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 // import { PCFShadowMap, PCFSoftShadowMap } from "three";
 import { setup, firebase } from "./AppFirebase.js";
 import { Now } from "./Now.js";
+import { UIWatchTV } from "./UIWatchTV.js";
 
 function MyScene({ children }) {
   return (
@@ -19,51 +20,75 @@ function MyScene({ children }) {
 let Pages = [
   {
     name: "loklok",
-    Component: dynamic(() => import("./MapLokLok.js").then((e) => e.MapScene)),
+    Component: dynamic(() =>
+      import(/* webpackPrefetch: true */ "./MapLokLok.js").then(
+        (e) => e.MapScene
+      )
+    ),
   },
   {
     name: "multitude",
     Component: dynamic(() =>
-      import("./MapMultitude.js").then((e) => e.MapScene)
+      import(/* webpackPrefetch: true */ "./MapMultitude.js").then(
+        (e) => e.MapScene
+      )
     ),
   },
   {
     name: "chill",
     Component: dynamic(() =>
-      import("./MapPlaceToChill.js").then((e) => e.MapScene)
+      import(/* webpackPrefetch: true */ "./MapPlaceToChill.js").then(
+        (e) => e.MapScene
+      )
     ),
   },
   {
     name: "church",
-    Component: dynamic(() => import("./MapChurch.js").then((e) => e.MapScene)),
+    Component: dynamic(() =>
+      import(/* webpackPrefetch: true */ "./MapChurch.js").then(
+        (e) => e.MapScene
+      )
+    ),
   },
   //
   {
     name: "prism",
     Component: dynamic(() =>
-      import("./MapStagePrism.js").then((e) => e.MapScene)
+      import(/* webpackPrefetch: true */ "./MapStagePrism.js").then(
+        (e) => e.MapScene
+      )
     ),
   },
   //
   {
     name: "heavenly",
     Component: dynamic(() =>
-      import("./MapHeavenly.js").then((e) => e.MapScene)
+      import(/* webpackPrefetch: true */ "./MapHeavenly.js").then(
+        (e) => e.MapScene
+      )
     ),
   },
 
   //
   {
     name: "bread",
-    Component: dynamic(() => import("./MapBread.js").then((e) => e.MapScene)),
+    Component: dynamic(() =>
+      import(/* webpackPrefetch: true */ "./MapBread.js").then(
+        (e) => e.MapScene
+      )
+    ),
   },
   {
     name: "tv",
-    Component: dynamic(() => import("./MapTV.js").then((e) => e.MapScene)),
+    Component: dynamic(() =>
+      import(/* webpackPrefetch: true */ "./MapTV.js").then((e) => e.MapScene)
+    ),
   },
   {
     name: "home",
-    Component: dynamic(() => import("./MapHome.js").then((e) => e.MapScene)),
+    Component: dynamic(() =>
+      import(/* webpackPrefetch: true */ "./MapHome.js").then((e) => e.MapScene)
+    ),
   },
   //
 
@@ -89,28 +114,66 @@ export function NewGame3D() {
     }
   }, [route.query.roomID]);
   return (
-    <div className="w-full h-full">
-      {typeof found === "object" && found !== null ? (
-        <Canvas
-          dpr={
-            (typeof window !== "undefined" && window.devicePixelRatio) || 1.0
-          }
-        >
-          {/* <MyScene> */}
-          <found.Component></found.Component>
-          {/* </MyScene> */}
-        </Canvas>
-      ) : found === null ? (
-        <div className="w-full h-full flex items-center justify-center">
-          Loading...
-        </div>
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          Not Found
+    <>
+      <div className="w-full h-full">
+        {typeof found === "object" && found !== null ? (
+          <Canvas
+            dpr={
+              (typeof window !== "undefined" && window.devicePixelRatio) || 1.0
+            }
+          >
+            {/* <MyScene> */}
+            <found.Component></found.Component>
+            {/* </MyScene> */}
+          </Canvas>
+        ) : found === null ? (
+          <div className="w-full h-full flex items-center justify-center">
+            Loading...
+          </div>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            Not Found
+          </div>
+        )}
+        <Cursor></Cursor>
+      </div>
+      <Overlays></Overlays>
+    </>
+  );
+}
+
+function Overlays() {
+  Now.makeKeyReactive(`overlay`);
+  return (
+    <>
+      {Now.overlay === "watch" && (
+        <div className="w-full h-full absolute top-0 left-0 bg-white bg-opacity-80">
+          <UIWatchTV />
         </div>
       )}
-      <Cursor></Cursor>
-    </div>
+
+      {Now.overlay && (
+        <div
+          className="absolute top-0 right-0 m-4 cursor-pointer"
+          onClick={() => {
+            Now.overlay = "";
+          }}
+          onTouchStart={() => {
+            Now.overlay = "";
+          }}
+        >
+          <svg
+            width="24"
+            height="24"
+            xmlns="http://www.w3.org/2000/svg"
+            fillRule="evenodd"
+            clipRule="evenodd"
+          >
+            <path d="M12 11.293l10.293-10.293.707.707-10.293 10.293 10.293 10.293-.707.707-10.293-10.293-10.293 10.293-.707-.707 10.293-10.293-10.293-10.293.707-.707 10.293 10.293z" />
+          </svg>
+        </div>
+      )}
+    </>
   );
 }
 

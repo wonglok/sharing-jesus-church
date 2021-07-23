@@ -39,12 +39,9 @@ import { ENMini } from "../vfx-runtime/ENMini";
 // import { Sphere } from "@react-three/drei";
 import { LightExpress } from "./ShadowLighting";
 
-//
 // import { ShaderCubeChromeGlass } from "../vfx-library/ShaderCubeChromeGlass";
-//
 // import { CameraRigOrbit } from "./CameraRigOrbit";
 // import { CameraRigOrbitBirdView } from "./CameraRigOrbitBirdView";
-//
 
 // import { CameraRigChurch } from "./CameraRigChurch";
 import { RainbowClassic } from "./RainbowClassic";
@@ -78,20 +75,7 @@ function MapFloor() {
     src.traverse((item) => {
       if (item.material) {
         item.userData.useRainbow = true;
-        // item.material.transparent = true;
-        // item.material.opacity = 0.5;
         item.material.side = DoubleSide;
-        // item.material.emissive = new Color("#111111");
-
-        // item.receiveShadow = true;
-        // item.castShadow = true;
-        // if (item.name !== "Plane") {
-        //   item.userData.useRainbow = true;
-        //   item.material = new MeshBasicMaterial({
-        //     side: DoubleSide,
-        //   });
-        // }
-        //
       }
     });
     return { floor: src };
@@ -114,6 +98,8 @@ function MapFloor() {
     Now.goingTo.copy(startAt);
   }, [startAt]);
 
+  //
+
   return (
     <group>
       {floor && (
@@ -121,7 +107,7 @@ function MapFloor() {
           {/*  */}
           <Portal
             text={{
-              ready: "Watch",
+              ready: "Watch Videos",
               loading: "Teleporting...",
             }}
             action={() => {
@@ -137,7 +123,7 @@ function MapFloor() {
 
           <Portal
             text={{
-              ready: "My Home",
+              ready: "Home Land",
               loading: "Teleporting...",
             }}
             action={() => {

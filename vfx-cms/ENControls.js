@@ -129,7 +129,7 @@ export function ENControls() {
   };
 
   useEffect(() => {
-    window.addEventListener(
+    gl.domElement.addEventListener(
       "touchstart",
       (ev) => {
         ev.preventDefault();
@@ -137,7 +137,7 @@ export function ENControls() {
       { passive: false }
     );
 
-    window.addEventListener(
+    gl.domElement.addEventListener(
       "touchmove",
       (ev) => {
         ev.preventDefault();

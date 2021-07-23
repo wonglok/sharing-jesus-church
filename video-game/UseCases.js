@@ -211,10 +211,10 @@ export function MapSimulation({
         let hit = goFnc();
         if (hit) {
           console.log(hit.point);
-          if (process.env.NODE_ENV === "development") {
-            let copy = require("copy-to-clipboard");
-            copy(JSON.stringify(hit.point));
-          }
+          // if (process.env.NODE_ENV === "development") {
+          //   let copy = require("copy-to-clipboard");
+          //   copy(JSON.stringify(hit.point));
+          // }
         }
       },
       goDown: (e) => {

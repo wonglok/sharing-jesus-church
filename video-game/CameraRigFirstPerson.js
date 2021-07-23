@@ -49,7 +49,7 @@ export function CameraRigFirstPerson() {
   );
 
   useEffect(() => {
-    window.addEventListener(
+    gl.domElement.addEventListener(
       "touchstart",
       (ev) => {
         ev.preventDefault();
@@ -57,7 +57,7 @@ export function CameraRigFirstPerson() {
       { passive: false }
     );
 
-    window.addEventListener(
+    gl.domElement.addEventListener(
       "touchmove",
       (ev) => {
         ev.preventDefault();
@@ -65,7 +65,7 @@ export function CameraRigFirstPerson() {
       { passive: false }
     );
 
-    window.addEventListener(
+    gl.domElement.addEventListener(
       "touchstart",
       (ev) => {
         ev.preventDefault();

@@ -48,7 +48,7 @@ export function CameraRigNipple() {
   );
 
   useEffect(() => {
-    window.addEventListener(
+    gl.domElement.addEventListener(
       "touchstart",
       (ev) => {
         ev.preventDefault();
@@ -56,7 +56,7 @@ export function CameraRigNipple() {
       { passive: false }
     );
 
-    window.addEventListener(
+    gl.domElement.addEventListener(
       "touchmove",
       (ev) => {
         ev.preventDefault();
@@ -64,7 +64,7 @@ export function CameraRigNipple() {
       { passive: false }
     );
 
-    window.addEventListener(
+    gl.domElement.addEventListener(
       "touchstart",
       (ev) => {
         ev.preventDefault();

@@ -16,6 +16,7 @@ import {
   Camera,
   Color,
   DoubleSide,
+  MeshLambertMaterial,
   MeshStandardMaterial,
   Scene,
   ShaderMaterial,
@@ -73,12 +74,13 @@ function MapFloor() {
     src.position.y = -2 * scale;
     src.traverse((item) => {
       if (item.material) {
+        item.material = new MeshLambertMaterial({
+          color: item.material.color,
+        });
         item.material.side = DoubleSide;
       }
       if (item.name === "wallpaper") {
         item.material.color = new Color("#ffffff");
-        item.material.metalness = 1.0;
-        item.frustumCulled = false;
       }
     });
     return { floor: src };
@@ -151,7 +153,7 @@ function MapFloor() {
             </group>
           </group>
 
-          {/* <TV floor={floor}></TV> */}
+          <TV floor={floor}></TV>
 
           {/* <group frustumCulled={false}>
             <Youtube floor={floor}></Youtube>
@@ -188,57 +190,61 @@ function MapFloor() {
   );
 }
 
-function Youtube({ floor }) {
-  let scale = 1;
-  return (
-    <>
-      {createPortal(
-        <Html
-          frustumCulled={false}
-          style={{
-            width: `${334 * scale}px`,
-            height: `${216 * scale}px`,
-            background: "white",
-          }}
-          //
-          rotation-x={-Math.PI / 2}
-          position={[0, 0.05, -0.09]}
-          scale={1 / scale}
-          transform
-          occlude
-        >
-          <iframe
-            width={`${334 * scale}`}
-            height={`${216 * scale}`}
-            src=""
-            title="YouTube video player"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
-        </Html>,
-        floor.getObjectByName("wallpaper")
-      )}
-    </>
-  );
-}
+// function Youtube({ floor }) {
+//   let scale = 1;
+//   return (
+//     <>
+//       {createPortal(
+//         <Html
+//           frustumCulled={false}
+//           style={{
+//             width: `${334 * scale}px`,
+//             height: `${216 * scale}px`,
+//             background: "white",
+//           }}
+//           //
+//           rotation-x={-Math.PI / 2}
+//           position={[0, 0.05, -0.09]}
+//           scale={1 / scale}
+//           transform
+//           occlude
+//         >
+//           <iframe
+//             width={`${334 * scale}`}
+//             height={`${216 * scale}`}
+//             src=""
+//             title="YouTube video player"
+//             frameBorder="0"
+//             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+//             allowFullScreen
+//           ></iframe>
+//         </Html>,
+//         floor.getObjectByName("wallpaper")
+//       )}
+//     </>
+//   );
+// }
 
 function TV({ floor }) {
-  Now.makeKeyReactive("isUnLocked");
   return (
     <>
       {createPortal(
-        !Now.isUnLocked ? (
-          <mesh
-            geometry={floor.getObjectByName("wallpaper").geometry.clone()}
-            rotation-x={(-Math.PI / 2) * 0.0}
-            position={[0, 0.05, 0.0]}
-          >
-            <meshBasicMaterial></meshBasicMaterial>
-          </mesh>
-        ) : (
-          <group></group>
-        ),
+        <mesh
+          onPointerDown={() => {
+            Now.overlay = "watch";
+          }}
+          onPointerEnter={() => {
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerLeave={() => {
+            document.body.style.cursor = "";
+          }}
+          geometry={floor.getObjectByName("wallpaper").geometry.clone()}
+          rotation-x={(-Math.PI / 2) * 0.0}
+          position={[0, 0.05, 0.0]}
+        >
+          <meshBasicMaterial></meshBasicMaterial>
+        </mesh>,
         floor.getObjectByName("wallpaper")
       )}
     </>
@@ -250,9 +256,7 @@ function LaydownGuy({ poseURL = `/chibi/ChibiBase-rigged.fbx` }) {
   let person = useMemo(() => {
     raw.traverse((it) => {
       if (it.material) {
-        it.material = new MeshStandardMaterial({
-          metalness: 0.8,
-          roughness: 0.4,
+        it.material = new MeshLambertMaterial({
           side: DoubleSide,
         });
         it.frustumCulled = false;
@@ -392,259 +396,257 @@ export function MapScene() {
         </group>
       </Suspense>
       <CameraRigTV></CameraRigTV>
-      <LookatMeCloud></LookatMeCloud>
+      {/* <LookatMeCloud></LookatMeCloud> */}
     </>
   );
 }
 
-function Cross() {
-  let fbx = useFBX(`/church/holy-cross.fbx`);
+// function Cross() {
+//   let fbx = useFBX(`/church/holy-cross.fbx`);
 
-  useEffect(() => {
-    fbx.traverse((it) => {
-      if (it.material) {
-        // enableBloom(it);
-        // it.castShadow = true;
-        it.material.color = new Color("#121212");
+//   useEffect(() => {
+//     fbx.traverse((it) => {
+//       if (it.material) {
+//         // enableBloom(it);
+//         // it.castShadow = true;
+//         it.material.color = new Color("#121212");
 
-        if (it.name === "BezierCurve") {
-          it.visible = false;
-        }
-      }
-    });
-  }, [fbx]);
+//         if (it.name === "BezierCurve") {
+//           it.visible = false;
+//         }
+//       }
+//     });
+//   }, [fbx]);
 
-  //
+//   //
 
-  return (
-    <group scale={0.09}>
-      <primitive
-        position-x={-15}
-        position-y={15}
-        rotation-y={Math.PI * (0.25 + 0.5 + 0.1)}
-        rotation-x={Math.PI * -0.5}
-        object={fbx}
-      ></primitive>
-    </group>
-  );
-}
+//   return (
+//     <group scale={0.09}>
+//       <primitive
+//         position-x={-15}
+//         position-y={15}
+//         rotation-y={Math.PI * (0.25 + 0.5 + 0.1)}
+//         rotation-x={Math.PI * -0.5}
+//         object={fbx}
+//       ></primitive>
+//     </group>
+//   );
+// }
 
-function LookatMeCloud() {
-  let { gl, camera, scene } = useThree();
-  let myScene = useMemo(() => {
-    return new Scene();
-  }, []);
+// function LookatMeCloud() {
+//   let { gl, camera, scene } = useThree();
+//   let myScene = useMemo(() => {
+//     return new Scene();
+//   }, []);
 
-  let myCam = useMemo(() => {
-    return new Camera();
-  }, []);
+//   let myCam = useMemo(() => {
+//     return new Camera();
+//   }, []);
 
-  let mat = useMemo(() => {
-    return new ShaderMaterial({
-      uniforms: {
-        time: { value: 0 },
-        uCamPos: { value: camera.position },
-        uCamRot: { value: camera.rotation },
-      },
-      transparent: true,
-      depthWrite: false,
-      // blending: AdditiveBlending,
-      vertexShader: `
-      //
+//   let mat = useMemo(() => {
+//     return new ShaderMaterial({
+//       uniforms: {
+//         time: { value: 0 },
+//         uCamPos: { value: camera.position },
+//         uCamRot: { value: camera.rotation },
+//       },
+//       transparent: true,
+//       depthWrite: false,
+//       // blending: AdditiveBlending,
+//       vertexShader: `
+//       //
 
-      varying vec2 vUv;
-      varying vec3 vPos;
-      varying vec3 vCamPos;
-      uniform vec3 uCamPos;
+//       varying vec2 vUv;
+//       varying vec3 vPos;
+//       varying vec3 vCamPos;
+//       uniform vec3 uCamPos;
 
-      void main (void) {
-        //
-        vec4 iPos = vec4(position, 1.0);
-        gl_Position = projectionMatrix * modelViewMatrix * iPos;
+//       void main (void) {
+//         //
+//         vec4 iPos = vec4(position, 1.0);
+//         gl_Position = projectionMatrix * modelViewMatrix * iPos;
 
-        vCamPos = uCamPos;
-        vPos = iPos.xyz;
-        vUv = uv;
-      }
-      `,
+//         vCamPos = uCamPos;
+//         vPos = iPos.xyz;
+//         vUv = uv;
+//       }
+//       `,
 
-      fragmentShader: `
+//       fragmentShader: `
 
-      uniform float time;
-      varying vec2 vUv;
-      varying vec3 vCamPos;
-      varying vec3 vPos;
-      uniform vec3 uCamRot;
+//       uniform float time;
+//       varying vec2 vUv;
+//       varying vec3 vCamPos;
+//       varying vec3 vPos;
+//       uniform vec3 uCamRot;
 
+//         //  Simplex 3D Noise
+//         //  by Ian McEwan, Ashima Arts
+//         //
+//         vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
+//         vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
 
-        //  Simplex 3D Noise
-        //  by Ian McEwan, Ashima Arts
-        //
-        vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
-        vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+//         float snoise(vec3 v){
+//         const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
+//         const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
 
-        float snoise(vec3 v){
-        const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
-        const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
+//         // First corner
+//         vec3 i  = floor(v + dot(v, C.yyy) );
+//         vec3 x0 =   v - i + dot(i, C.xxx) ;
 
-        // First corner
-        vec3 i  = floor(v + dot(v, C.yyy) );
-        vec3 x0 =   v - i + dot(i, C.xxx) ;
+//         // Other corners
+//         vec3 g = step(x0.yzx, x0.xyz);
+//         vec3 l = 1.0 - g;
+//         vec3 i1 = min( g.xyz, l.zxy );
+//         vec3 i2 = max( g.xyz, l.zxy );
 
-        // Other corners
-        vec3 g = step(x0.yzx, x0.xyz);
-        vec3 l = 1.0 - g;
-        vec3 i1 = min( g.xyz, l.zxy );
-        vec3 i2 = max( g.xyz, l.zxy );
+//         //  x0 = x0 - 0. + 0.0 * C
+//         vec3 x1 = x0 - i1 + 1.0 * C.xxx;
+//         vec3 x2 = x0 - i2 + 2.0 * C.xxx;
+//         vec3 x3 = x0 - 1. + 3.0 * C.xxx;
 
-        //  x0 = x0 - 0. + 0.0 * C
-        vec3 x1 = x0 - i1 + 1.0 * C.xxx;
-        vec3 x2 = x0 - i2 + 2.0 * C.xxx;
-        vec3 x3 = x0 - 1. + 3.0 * C.xxx;
+//         // Permutations
+//         i = mod(i, 289.0 );
+//         vec4 p = permute( permute( permute(
+//                     i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
+//                   + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
+//                   + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
 
-        // Permutations
-        i = mod(i, 289.0 );
-        vec4 p = permute( permute( permute(
-                    i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
-                  + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))
-                  + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
+//         // Gradients
+//         // ( N*N points uniformly over a square, mapped onto an octahedron.)
+//         float n_ = 1.0/7.0; // N=7
+//         vec3  ns = n_ * D.wyz - D.xzx;
 
-        // Gradients
-        // ( N*N points uniformly over a square, mapped onto an octahedron.)
-        float n_ = 1.0/7.0; // N=7
-        vec3  ns = n_ * D.wyz - D.xzx;
+//         vec4 j = p - 49.0 * floor(p * ns.z *ns.z);  //  mod(p,N*N)
 
-        vec4 j = p - 49.0 * floor(p * ns.z *ns.z);  //  mod(p,N*N)
+//         vec4 x_ = floor(j * ns.z);
+//         vec4 y_ = floor(j - 7.0 * x_ );    // mod(j,N)
 
-        vec4 x_ = floor(j * ns.z);
-        vec4 y_ = floor(j - 7.0 * x_ );    // mod(j,N)
+//         vec4 x = x_ *ns.x + ns.yyyy;
+//         vec4 y = y_ *ns.x + ns.yyyy;
+//         vec4 h = 1.0 - abs(x) - abs(y);
 
-        vec4 x = x_ *ns.x + ns.yyyy;
-        vec4 y = y_ *ns.x + ns.yyyy;
-        vec4 h = 1.0 - abs(x) - abs(y);
+//         vec4 b0 = vec4( x.xy, y.xy );
+//         vec4 b1 = vec4( x.zw, y.zw );
 
-        vec4 b0 = vec4( x.xy, y.xy );
-        vec4 b1 = vec4( x.zw, y.zw );
+//         vec4 s0 = floor(b0)*2.0 + 1.0;
+//         vec4 s1 = floor(b1)*2.0 + 1.0;
+//         vec4 sh = -step(h, vec4(0.0));
 
-        vec4 s0 = floor(b0)*2.0 + 1.0;
-        vec4 s1 = floor(b1)*2.0 + 1.0;
-        vec4 sh = -step(h, vec4(0.0));
+//         vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
+//         vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
 
-        vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
-        vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
+//         vec3 p0 = vec3(a0.xy,h.x);
+//         vec3 p1 = vec3(a0.zw,h.y);
+//         vec3 p2 = vec3(a1.xy,h.z);
+//         vec3 p3 = vec3(a1.zw,h.w);
 
-        vec3 p0 = vec3(a0.xy,h.x);
-        vec3 p1 = vec3(a0.zw,h.y);
-        vec3 p2 = vec3(a1.xy,h.z);
-        vec3 p3 = vec3(a1.zw,h.w);
+//         // Normalise gradients
+//         vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+//         p0 *= norm.x;
+//         p1 *= norm.y;
+//         p2 *= norm.z;
+//         p3 *= norm.w;
 
-        // Normalise gradients
-        vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
-        p0 *= norm.x;
-        p1 *= norm.y;
-        p2 *= norm.z;
-        p3 *= norm.w;
+//         // Mix final noise value
+//         vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+//         m = m * m;
+//         return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),
+//                                       dot(p2,x2), dot(p3,x3) ) );
+//         }
 
-        // Mix final noise value
-        vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-        m = m * m;
-        return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),
-                                      dot(p2,x2), dot(p3,x3) ) );
-        }
+//           float surface3( vec3 coord ){
+//             float height	= 0.0;
+//             coord	*= 0.8;
+//             height	+= abs(snoise(coord      )) * 1.0;
+//             height	+= abs(snoise(coord * 2.0)) * 0.5;
+//             height	+= abs(snoise(coord * 4.0)) * 0.25;
+//             height	+= abs(snoise(coord * 8.0)) * 0.125;
+//             height	+= abs(snoise(coord * 35.0)) * 0.035;
+//             return height;
+//           }
 
+//           vec4 mainImage (float depth) {
+//             vec4 outC = vec4(0.0);
 
-          float surface3( vec3 coord ){
-            float height	= 0.0;
-            coord	*= 0.8;
-            height	+= abs(snoise(coord      )) * 1.0;
-            height	+= abs(snoise(coord * 2.0)) * 0.5;
-            height	+= abs(snoise(coord * 4.0)) * 0.25;
-            height	+= abs(snoise(coord * 8.0)) * 0.125;
-            height	+= abs(snoise(coord * 35.0)) * 0.035;
-            return height;
-          }
+//             vec3 coord	= vec3( vUv, depth );
+//             coord.x += time * -0.05;
 
-          vec4 mainImage (float depth) {
-            vec4 outC = vec4(0.0);
+//             float height	= surface3( uCamRot.yyx * 0.1 + coord + (pow(length(vCamPos), 0.7) / 700.0 ) + vec3(0.0, 0.0, depth) );
 
-            vec3 coord	= vec3( vUv, depth );
-            coord.x += time * -0.05;
+//             height = clamp(height, 0.0, 1.0);
+//             height = pow(height, 3.5);
 
-            float height	= surface3( uCamRot.yyx * 0.1 + coord + (pow(length(vCamPos), 0.7) / 700.0 ) + vec3(0.0, 0.0, depth) );
+//             outC = vec4(vec3(height), height);
 
-            height = clamp(height, 0.0, 1.0);
-            height = pow(height, 3.5);
+//             return outC;
+//           }
 
-            outC = vec4(vec3(height), height);
+//         void main (void) {
+//           vec4 cloud = vec4(0.0);
 
-            return outC;
-          }
+//           for (int i = 0; i < 4;i++) {
+//             cloud += mainImage(float(i) / 3.0) / 2.0;
+//           }
 
-        void main (void) {
-          vec4 cloud = vec4(0.0);
+//           cloud.rgb *= 0.7;
 
-          for (int i = 0; i < 4;i++) {
-            cloud += mainImage(float(i) / 3.0) / 2.0;
-          }
+//           gl_FragColor = cloud;
+//         }
+//       `,
+//     });
+//   });
+//   let fbo = useFBO(256, 256);
 
-          cloud.rgb *= 0.7;
+//   useEffect(() => {
+//     myCam.position.z = 1;
 
-          gl_FragColor = cloud;
-        }
-      `,
-    });
-  });
-  let fbo = useFBO(256, 256);
+//     return () => {};
+//   });
 
-  useEffect(() => {
-    myCam.position.z = 1;
+//   useFrame((st, dt) => {
+//     dt = dt >= 1 / 30 ? 1 / 30 : dt;
 
-    return () => {};
-  });
+//     mat.uniforms.time.value += dt;
 
-  useFrame((st, dt) => {
-    dt = dt >= 1 / 30 ? 1 / 30 : dt;
+//     let orig = gl.getRenderTarget();
+//     gl.setRenderTarget(fbo);
 
-    mat.uniforms.time.value += dt;
+//     gl.clear();
 
-    let orig = gl.getRenderTarget();
-    gl.setRenderTarget(fbo);
+//     gl.render(myScene, myCam);
 
-    gl.clear();
+//     gl.setRenderTarget(orig);
+//   });
 
-    gl.render(myScene, myCam);
+//   useEffect(() => {
+//     scene.add(camera);
+//     return () => {
+//       scene.remove(camera);
+//     };
+//   }); //
 
-    gl.setRenderTarget(orig);
-  });
+//   //
+//   return (
+//     <group>
+//       {createPortal(
+//         <mesh material={mat}>
+//           <planeBufferGeometry args={[2, 2]}></planeBufferGeometry>
+//         </mesh>,
+//         myScene
+//       )}
 
-  useEffect(() => {
-    scene.add(camera);
-    return () => {
-      scene.remove(camera);
-    };
-  }); //
-
-  //
-  return (
-    <group>
-      {createPortal(
-        <mesh material={mat}>
-          <planeBufferGeometry args={[2, 2]}></planeBufferGeometry>
-        </mesh>,
-        myScene
-      )}
-
-      {createPortal(
-        <mesh frustumCulled={false} scale={30} position-z={-2000}>
-          <planeBufferGeometry args={[100, 100]}></planeBufferGeometry>
-          <meshBasicMaterial
-            transparent={true}
-            map={fbo.texture}
-            blending={AdditiveBlending}
-          ></meshBasicMaterial>
-        </mesh>,
-        camera
-      )}
-    </group>
-  );
-}
+//       {createPortal(
+//         <mesh frustumCulled={false} scale={30} position-z={-2000}>
+//           <planeBufferGeometry args={[100, 100]}></planeBufferGeometry>
+//           <meshBasicMaterial
+//             transparent={true}
+//             map={fbo.texture}
+//             blending={AdditiveBlending}
+//           ></meshBasicMaterial>
+//         </mesh>,
+//         camera
+//       )}
+//     </group>
+//   );
+// }
