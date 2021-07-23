@@ -25,6 +25,7 @@ import {
   DoubleSide,
   FrontSide,
   MeshStandardMaterial,
+  Vector3,
 } from "three";
 
 import { useFrame, useThree } from "@react-three/fiber";
@@ -153,16 +154,20 @@ function MapFloor() {
               loading: "Teleporting...",
             }}
             action={() => {
-              let to = {
-                x: -100.94987587431878,
-                y: 19.736615607334585,
-                z: 0.8931245035310837,
-              };
-              Now.avatarAt.copy(to);
-              Now.goingTo.copy(to);
+              Now.restoreAt = new Vector3().copy({
+                x: -64.81612330398461,
+                y: 11.783265512142165,
+                z: -0.06740962023805253,
+              });
+
+              //
+
               let router = require("next/router").default;
-              router.push("/room/heavenly");
+              router.push({
+                pathname: "/room/heavenly",
+              });
             }}
+            //
             zone={{
               x: 25.787964312387036,
               y: -1.9999917996758967,

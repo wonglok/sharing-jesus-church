@@ -50,6 +50,7 @@ import { LightExpress } from "./ShadowLighting";
 import { RainbowClassic } from "./RainbowClassic";
 import { CameraRig } from "./CameraRig";
 import { Portal } from "./Portal";
+import router from "next/router";
 
 function MapFloor() {
   let { scene } = useThree();
@@ -96,17 +97,11 @@ function MapFloor() {
     return { floor: src };
   }, []);
 
-  //
-
-  //
-
-  let startAtRef = useRef({
-    x: 0,
-    y: 0,
-    z: 0,
-  });
-
-  let startAt = startAtRef.current;
+  let startAt = useMemo(() => {
+    let newPlace = Now.restoreAt.clone();
+    newPlace.y += 10;
+    return newPlace;
+  }, [Now.restoreAt.length()]);
 
   useFrame(() => {
     if (floor) {
@@ -130,8 +125,6 @@ function MapFloor() {
               loading: "Teleporting...",
             }}
             action={() => {
-              Now.avatarAt.set(0, 0, 30);
-              Now.goingTo.set(0, 0, 30);
               let router = require("next/router").default;
               router.push("/room/tv");
             }}
@@ -148,8 +141,6 @@ function MapFloor() {
               loading: "Teleporting...",
             }}
             action={() => {
-              Now.avatarAt.set(0, 0, 30);
-              Now.goingTo.set(0, 0, 30);
               let router = require("next/router").default;
               router.push("/room/home");
             }}
@@ -166,8 +157,6 @@ function MapFloor() {
               loading: "Teleporting...",
             }}
             action={() => {
-              Now.avatarAt.set(0, 0, 30);
-              Now.goingTo.set(0, 0, 30);
               let router = require("next/router").default;
               router.push("/room/chill");
             }}

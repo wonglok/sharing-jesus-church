@@ -35,4 +35,6 @@ export const Now = makeShallowStore({
 
   reload: [],
   onlineUID: [],
+
+  restoreAt: new Vector3(),
 });
