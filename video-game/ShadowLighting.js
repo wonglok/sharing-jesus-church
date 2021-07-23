@@ -8,10 +8,12 @@ import {
   ShadowMaterial,
 } from "three";
 
-export function LightExpress({ lightPosition = [0, 50, 50] }) {
+export function LightExpress({ lightPosition = [0, 150, 10] }) {
   let ref = useRef();
-
+  let { get } = useThree();
   useEffect(() => {
+    get().gl.shadowMap.enabled = true;
+
     //Create a PointLight and turn on shadows for the light
     const light = new PointLight(0xffffff, 1, 2000);
     light.position.fromArray(lightPosition);
@@ -19,8 +21,8 @@ export function LightExpress({ lightPosition = [0, 50, 50] }) {
     ref.current.add(light);
 
     //Set up shadow properties for the light
-    light.shadow.mapSize.width = 256; // default
-    light.shadow.mapSize.height = 256; // default
+    light.shadow.mapSize.width = 512; // default
+    light.shadow.mapSize.height = 512; // default
     light.shadow.camera.near = 0.5; // default
     light.shadow.camera.far = 1024; // default
 

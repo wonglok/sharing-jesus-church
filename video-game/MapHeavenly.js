@@ -74,6 +74,7 @@ function MapFloor() {
     src.position.y = -2;
     src.traverse((item) => {
       if (item.material) {
+        item.receiveShadow = true;
         item.userData.useRainbow = true;
         item.material.side = DoubleSide;
       }

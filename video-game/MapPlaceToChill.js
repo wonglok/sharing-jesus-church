@@ -42,12 +42,7 @@ import { ENMini } from "../vfx-runtime/ENMini";
 // import { WiggleTrackerObject } from "../ENBatteries/museum/loklok";
 import { CameraRig } from "./CameraRig";
 import { RepeatWrapping } from "three";
-import { Sphere } from "@react-three/drei";
-
-//
-import { CameraRigOrbit } from "./CameraRigOrbit";
-import { CameraRigOrbitBirdView } from "./CameraRigOrbitBirdView";
-import { LightExpress, ShadowFloor } from "./ShadowLighting";
+import { LightExpress } from "./ShadowLighting";
 import { Portal } from "./Portal";
 
 function MapFloor() {
@@ -279,6 +274,7 @@ export function MapScene() {
         intensity={0.3}
         position={[0, 10, 10]}
       ></directionalLight>
+
       <Suspense fallback={null}>
         <EnvMap></EnvMap>
         <MapFloor></MapFloor>

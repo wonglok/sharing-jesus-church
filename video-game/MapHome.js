@@ -17,6 +17,7 @@ import {
   MainAvatarLoader,
   MapSimulation,
   DisplayOtherUsers,
+  NoBloomRenderLoop,
 } from "./UseCases";
 
 import {
@@ -72,23 +73,10 @@ function MapFloor() {
   // let grassNormal = useTexture(`/texture/normal-grass.jpg`);
 
   let { floor, shadow } = useMemo(() => {
-    let src = SkeletonUtils.clone(map.scene);
     let shadow = SkeletonUtils.clone(map.scene);
 
     let scale = 1;
-    src.scale.set(scale, scale, scale);
     shadow.scale.set(scale, scale, scale);
-
-    src.position.y = -1 * scale;
-    src.traverse((item) => {
-      if (item.material) {
-        item.receiveShadow = true;
-        item.material = new MeshPhongMaterial({
-          color: item.material.color,
-        });
-        item.material.side = DoubleSide;
-      }
-    });
 
     shadow.position.y = -1 * scale;
     shadow.traverse((item) => {
@@ -96,10 +84,11 @@ function MapFloor() {
         item.material = new MeshStandardMaterial({
           color: item.material.color,
         });
+        item.castShadow = true;
         item.receiveShadow = true;
       }
     });
-    return { floor: src, shadow };
+    return { floor: shadow, shadow };
   }, []);
 
   let startAt = {
@@ -174,14 +163,16 @@ function MapFloor() {
           <directionalLight
             intensity={0.15}
             position={[0, 10, 0]}
+            castShadow={true}
           ></directionalLight>
 
           <directionalLight
             intensity={0.15}
             position={[-10, 10, 0]}
+            castShadow={true}
           ></directionalLight>
 
-          <LightExpress lightPosition={[0, 0, 300]}></LightExpress>
+          <LightExpress lightPosition={[0, 0, 0]}></LightExpress>
           {/* <ShadowFloor></ShadowFloor> */}
         </group>
       )}
@@ -355,7 +346,7 @@ export function MapScene() {
       {/*  */}
       {/*  */}
       {/* <Bloomer></Bloomer> */}
-      {/* <NoBloomRenderLoop></NoBloomRenderLoop> */}
+      <NoBloomRenderLoop></NoBloomRenderLoop>
       {/*
       <directionalLight
         intensity={0.7}

@@ -736,6 +736,7 @@ export function MainAvatarLoader() {
 
 export function NoBloomRenderLoop() {
   let run = ({ gl, scene, camera }, dt) => {
+    gl.shadowMap.enabled = true;
     gl.autoClear = false;
     gl.clear();
     gl.render(scene, camera);
