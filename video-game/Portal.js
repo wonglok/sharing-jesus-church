@@ -70,37 +70,16 @@ export function Portal({
         ></CountDownText>
 
         <mesh ref={ring3}>
-          {/* <sphereBufferGeometry
-            args={[
-              25,
-              50,
-              50,
-              0,
-              Math.PI * 2.0,
-              Math.PI * (0.5 - 0.12 / 2),
-              Math.PI * 0.12,
-            ]}
-          ></sphereBufferGeometry> */}
-          <torusGeometry args={[25 * 0.1, 1.5 * 0.1, 16, 50]}></torusGeometry>
+          <torusGeometry args={[25 * 0.15, 1.5 * 0.15, 16, 50]}></torusGeometry>
           <meshLambertMaterial
             side={DoubleSide}
             color="#ffffff"
           ></meshLambertMaterial>
 
           <mesh ref={ring2} scale={0.8}>
-            {/* <sphereBufferGeometry
-              args={[
-                25,
-                50,
-                50,
-                0,
-                Math.PI * 2.0,
-                Math.PI * (0.5 - 0.12 / 2),
-                Math.PI * 0.12,
-              ]}
-            ></sphereBufferGeometry> */}
-
-            <torusGeometry args={[25 * 0.1, 1.5 * 0.1, 16, 50]}></torusGeometry>
+            <torusGeometry
+              args={[25 * 0.15, 1.5 * 0.15, 16, 50]}
+            ></torusGeometry>
 
             <meshLambertMaterial
               side={DoubleSide}
@@ -108,19 +87,8 @@ export function Portal({
             ></meshLambertMaterial>
 
             <mesh ref={ring1} scale={0.8}>
-              {/* <sphereBufferGeometry
-                args={[
-                  25,
-                  50,
-                  50,
-                  0,
-                  Math.PI * 2.0,
-                  Math.PI * (0.5 - 0.12 / 2),
-                  Math.PI * 0.12,
-                ]}
-              ></sphereBufferGeometry> */}
               <torusGeometry
-                args={[25 * 0.1, 1.5 * 0.1, 16, 50]}
+                args={[25 * 0.15, 1.5 * 0.15, 16, 50]}
               ></torusGeometry>
 
               <meshLambertMaterial
@@ -206,7 +174,7 @@ function CountDownText({
 
   return (
     <Text
-      position-y={5 * 0.8}
+      position-y={5 * 0.8 * 1.5}
       scale={80 * 2 * 0.2 * 0.5}
       font={`/font/Cronos-Pro-Light_12448.ttf`}
       color={"#ffffff"}

@@ -153,7 +153,7 @@ function MapFloor() {
 
           <Portal
             text={{
-              ready: "The Rest of Jesus",
+              ready: "Place to Enjoy with Jesus",
               loading: "Teleporting...",
             }}
             action={() => {
@@ -161,9 +161,9 @@ function MapFloor() {
               router.push("/room/chill");
             }}
             zone={{
-              x: -100.94987587431878,
-              y: 19.736615607334585,
-              z: 0.8931245035310837,
+              x: -98.32837904762648,
+              y: 19.73661512432458,
+              z: -0.3936103573605578,
             }}
           ></Portal>
 

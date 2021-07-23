@@ -126,27 +126,27 @@ function MapFloor() {
           ></Portal>
 
           <group position-x={-5}>
-            <group position-x={10}>
-              <LaydownGuy
-                poseURL={`/chibi/avatar-rpm/watchtv/lay-1.fbx`}
-              ></LaydownGuy>
-            </group>
-
             <group position-x={-10}>
               <LaydownGuy
-                poseURL={`/chibi/avatar-rpm/watchtv/sit-1.fbx`}
+                poseURL={`/chibi/actions-for-this/pose/laying-1.fbx`}
               ></LaydownGuy>
             </group>
 
             <group position-x={0}>
               <LaydownGuy
-                poseURL={`/chibi/avatar-rpm/watchtv/lay-2.fbx`}
+                poseURL={`/chibi/actions-for-this/pose/laying-4.fbx`}
+              ></LaydownGuy>
+            </group>
+
+            <group position-x={10}>
+              <LaydownGuy
+                poseURL={`/chibi/actions-for-this/pose/laying-3.fbx`}
               ></LaydownGuy>
             </group>
 
             <group position-x={20}>
               <LaydownGuy
-                poseURL={`/chibi/avatar-rpm/watchtv/sit-2.fbx`}
+                poseURL={`/chibi/actions-for-this/pose/laying-2.fbx`}
               ></LaydownGuy>
             </group>
           </group>
@@ -245,14 +245,15 @@ function TV({ floor }) {
   );
 }
 
-function LaydownGuy({ poseURL = `/chibi/avatar-rpm/watchtv/lay-1.fbx` }) {
-  let raw = useFBX(`/chibi/avatar-rpm/base-rig-for-rpm.fbx`);
+function LaydownGuy({ poseURL = `/chibi/ChibiBase-rigged.fbx` }) {
+  let raw = useFBX(`/chibi/ChibiBase-rigged.fbx`);
   let person = useMemo(() => {
     raw.traverse((it) => {
       if (it.material) {
         it.material = new MeshStandardMaterial({
           metalness: 0.8,
           roughness: 0.4,
+          side: DoubleSide,
         });
         it.frustumCulled = false;
       }
@@ -278,7 +279,7 @@ function LaydownGuy({ poseURL = `/chibi/avatar-rpm/watchtv/lay-1.fbx` }) {
   });
 
   return (
-    <group scale={8} position={[0, -7, 0]} rotation={[0, Math.PI, 0]}>
+    <group scale={0.013} position={[0, -6.5, 0]} rotation={[0, Math.PI, 0]}>
       <primitive object={person} />
     </group>
   );
