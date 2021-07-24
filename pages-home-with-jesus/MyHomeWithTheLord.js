@@ -76,7 +76,7 @@ function useCubeMap({ path = `/cubemap/`, type = "png" }) {
 
 function MapStuff({ startAt }) {
   let ref = useRef();
-  let mapURL = `/map/detailed-glass-house4.glb`;
+  let mapURL = `/map/detailed-glass-house5.glb`;
   let raw = useGLTF(mapURL);
   let refraction = useCubeMap({ path: `/cubemaps/lake/`, type: "png" });
   refraction.mapping = CubeRefractionMapping;
