@@ -20,9 +20,9 @@ import {
 export function MyHomeWithTheLord() {
   let startAt = useMemo(() => {
     return {
-      x: 0,
-      y: 20,
-      z: 219.04618923750945,
+      x: 22.852173826357276,
+      y: 14.807240279333058 + 10,
+      z: 257.6796410375871,
     };
   }, []);
 
@@ -75,9 +75,8 @@ function useCubeMap({ path = `/cubemap/`, type = "png" }) {
 }
 
 function MapStuff({ startAt }) {
-  let refCube = useRef();
   let ref = useRef();
-  let mapURL = `/map/domeglass.glb`;
+  let mapURL = `/map/detailed-glass-house4.glb`;
   let raw = useGLTF(mapURL);
   let refraction = useCubeMap({ path: `/cubemaps/lake/`, type: "png" });
   refraction.mapping = CubeRefractionMapping;
@@ -87,6 +86,7 @@ function MapStuff({ startAt }) {
 
   let floor = useMemo(() => {
     let cloned = SkeletonUtils.clone(raw.scene);
+    cloned.scale.set(2, 2, 2);
     cloned.traverse((it) => {
       if (it.material) {
         it.material = it.material.clone();
