@@ -24,6 +24,7 @@ export const Now = makeShallowStore({
   avatarMode: "standing",
 
   // avatarAtPhy: new Vector3(),
+  hit: new Vector3(),
 
   camMode: "auto",
   // camMode: "first",

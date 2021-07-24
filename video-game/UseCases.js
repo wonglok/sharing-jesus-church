@@ -155,6 +155,7 @@ export function MapSimulation({
     let goFnc = () => {
       mouse.x = (x / window.innerWidth) * 2 - 1;
       mouse.y = -(y / window.innerHeight) * 2 + 1;
+
       floorcaster.setFromCamera(mouse, camera);
 
       const hit = collider.geometry.boundsTree.raycastFirst(
@@ -194,8 +195,9 @@ export function MapSimulation({
         //   Now.goingTo.copy(hit.point);
         // }
         let hit = goFnc();
-        if (hit) {
+        if (hit && Now.isUnLocked) {
           console.log(hit.point);
+
           // if (process.env.NODE_ENV === "development") {
           //   let copy = require("copy-to-clipboard");
           //   copy(JSON.stringify(hit.point));
@@ -225,6 +227,20 @@ export function MapSimulation({
           goFnc();
         }
       },
+
+      clicker: () => {
+        if (!Now.isUnLocked) {
+          floorcaster.setFromCamera(center, camera);
+          let res = [];
+          floorcaster.intersectObject(get().scene, true, res);
+          let first = res[0];
+          if (first) {
+            console.log(first.point, first.distance, first.object);
+          } else {
+            console.log("not hit");
+          }
+        }
+      },
     };
 
     renderer.domElement.addEventListener("pointerdown", h.goDown, {
@@ -239,6 +255,9 @@ export function MapSimulation({
     renderer.domElement.addEventListener("pointermove", h.goMove, {
       passive: false,
     });
+
+    let center = new Vector2(0, 0);
+    renderer.domElement.addEventListener("click", h.clicker);
 
     let rAFID = 0;
     let rAF = () => {
@@ -255,6 +274,9 @@ export function MapSimulation({
       renderer.domElement.removeEventListener("pointerup", h.click);
       renderer.domElement.removeEventListener("pointerup", h.goUp);
       renderer.domElement.removeEventListener("pointermove", h.goMove);
+
+      //
+      renderer.domElement.removeEventListener("click", h.clicker);
     };
   }, [collider]);
 

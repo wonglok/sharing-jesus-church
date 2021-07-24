@@ -107,10 +107,12 @@ function MapFloor() {
 
           <Suspense fallback={null}>
             <group visible={Now.enableFloorCursor}>
-              <MainAvatarLoader></MainAvatarLoader>
+              <group visible={false}>
+                <MainAvatarLoader></MainAvatarLoader>
+              </group>
             </group>
 
-            <MyWiggles></MyWiggles>
+            {/* <MyWiggles></MyWiggles> */}
 
             <Suspense fallback={null}>
               <GameDataReceiver></GameDataReceiver>

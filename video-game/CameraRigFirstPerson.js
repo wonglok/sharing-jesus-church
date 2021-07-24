@@ -49,6 +49,13 @@ export function CameraRigFirstPerson() {
   );
 
   useEffect(() => {
+    Now.enableFloorCursor = false;
+    return () => {
+      Now.enableFloorCursor = true;
+    };
+  });
+
+  useEffect(() => {
     gl.domElement.addEventListener(
       "touchstart",
       (ev) => {
@@ -176,7 +183,7 @@ export function CameraRigFirstPerson() {
       }
 
       camera.position.x = Now.avatarAt.x;
-      camera.position.y = Now.avatarAt.y + 10;
+      camera.position.y = Now.avatarAt.y + 5;
       camera.position.z = Now.avatarAt.z;
       // controls.getDirection(dir);
 
