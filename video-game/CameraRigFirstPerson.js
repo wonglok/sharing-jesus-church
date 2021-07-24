@@ -91,7 +91,7 @@ export function CameraRigFirstPerson() {
   useEffect(() => {
     camera.near = 0.1;
     camera.far = 10000;
-    camera.fov = 45;
+    camera.fov = 90;
     camera.updateProjectionMatrix();
 
     gl.domElement.addEventListener(
