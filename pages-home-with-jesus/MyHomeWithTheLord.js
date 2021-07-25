@@ -6,21 +6,19 @@ import { useMemo } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { Now } from "../video-game/Now";
 import { MainAvatarLogic, MapSimulation } from "../video-game/UseCases";
-import { useFrame, useThree } from "@react-three/fiber";
-import { EnvMap } from "../video-game/EnvMap";
+import { useFrame } from "@react-three/fiber";
+// import { EnvMap } from "../video-game/EnvMap";
 import { CubeMap } from "../video-game/CubeMap";
 import {
   CubeReflectionMapping,
   CubeRefractionMapping,
   DoubleSide,
-  MeshBasicMaterial,
-  MeshStandardMaterial,
 } from "three";
 
 export function MyHomeWithTheLord() {
   let startAt = useMemo(() => {
     return {
-      x: 22.852173826357276,
+      x: 0,
       y: 14.807240279333058 + 10,
       z: 257.6796410375871,
     };
@@ -76,7 +74,7 @@ function useCubeMap({ path = `/cubemap/`, type = "png" }) {
 
 function MapStuff({ startAt }) {
   let ref = useRef();
-  let mapURL = `/map/detailed-glass-house5.glb`;
+  let mapURL = `/map/detailed-glass-house7.glb`;
   let raw = useGLTF(mapURL);
   let refraction = useCubeMap({ path: `/cubemaps/lake/`, type: "png" });
   refraction.mapping = CubeRefractionMapping;
@@ -90,6 +88,9 @@ function MapStuff({ startAt }) {
     cloned.traverse((it) => {
       if (it.material) {
         it.material = it.material.clone();
+
+        it.userData.hoverable = true;
+        it.geometry.computeVertexNormals();
 
         if (it.name.toLowerCase().indexOf("icosphere") !== -1) {
           it.material.envMap = reflection;

@@ -10,6 +10,10 @@ export const Now = makeShallowStore({
   keyS: false,
   keyD: false,
 
+  cursorPos: new Vector3(),
+  cursorNormal: new Vector3(),
+  cursorType: "hide",
+
   speed: 1.0,
 
   moved: 0,

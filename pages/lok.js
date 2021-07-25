@@ -2,8 +2,8 @@ import { Canvas } from "@react-three/fiber";
 import { getGPUTier } from "detect-gpu";
 import { MyHomeWithTheLord } from "../pages-home-with-jesus/MyHomeWithTheLord";
 import { useState } from "react";
-import { FPCursor } from "../video-game/FPCursor";
-import { LockScreenHTML } from "../video-game/LockScreenHTML";
+// import { FPCursor } from "../video-game/FPCursor";
+// import { LockScreenHTML } from "../video-game/LockScreenHTML";
 
 export default function Home() {
   return (
@@ -16,8 +16,8 @@ export default function Home() {
       {/*  */}
 
       <CanvasArea></CanvasArea>
-      <FPCursor></FPCursor>
-      <LockScreenHTML></LockScreenHTML>
+      {/* <FPCursor></FPCursor> */}
+      {/* <LockScreenHTML></LockScreenHTML> */}
     </div>
   );
 }

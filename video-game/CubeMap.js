@@ -1,7 +1,7 @@
 import { useCubeTexture } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { useEffect } from "react";
-import { CubeRefractionMapping } from "three";
+// import { CubeRefractionMapping } from "three";
 
 export function CubeMap({ path = "/cubemaps/lake/", type = "png" }) {
   let list = ["px", "nx", "py", "ny", "pz", "nz"].map((e) => `${e}.${type}`);

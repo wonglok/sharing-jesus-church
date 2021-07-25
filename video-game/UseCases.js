@@ -175,6 +175,7 @@ export function MapSimulation({
 
       return hit;
     };
+
     let h = {
       click: (e) => {
         // mouse.x = (x / window.innerWidth) * 2 - 1;
@@ -195,9 +196,8 @@ export function MapSimulation({
         //   Now.goingTo.copy(hit.point);
         // }
         let hit = goFnc();
-        if (hit && Now.isUnLocked) {
-          console.log(hit.point);
-
+        if (hit) {
+          // console.log(hit.point);
           // if (process.env.NODE_ENV === "development") {
           //   let copy = require("copy-to-clipboard");
           //   copy(JSON.stringify(hit.point));
@@ -228,19 +228,7 @@ export function MapSimulation({
         }
       },
 
-      clicker: () => {
-        if (!Now.isUnLocked) {
-          floorcaster.setFromCamera(center, camera);
-          let res = [];
-          floorcaster.intersectObject(get().scene, true, res);
-          let first = res[0];
-          if (first) {
-            console.log(first.point, first.distance, first.object);
-          } else {
-            console.log("not hit");
-          }
-        }
-      },
+      clicker: () => {},
     };
 
     renderer.domElement.addEventListener("pointerdown", h.goDown, {
@@ -256,8 +244,8 @@ export function MapSimulation({
       passive: false,
     });
 
-    let center = new Vector2(0, 0);
-    renderer.domElement.addEventListener("click", h.clicker);
+    renderer.domElement.addEventListener("mousedown", h.clicker);
+    renderer.domElement.addEventListener("touchstart", h.clicker);
 
     let rAFID = 0;
     let rAF = () => {

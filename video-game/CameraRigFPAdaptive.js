@@ -27,10 +27,10 @@ export function CameraRigFPAdaptive() {
     <>
       {/* <CameraRigFirstPerson></CameraRigFirstPerson> */}
       {/* <CameraRig></CameraRig> */}
-      {mobile === false && (
+      {/* {mobile === false && (
         <CameraRigFirstPerson zoomInit={4.5}></CameraRigFirstPerson>
-      )}
-      {mobile === true && <CameraRigNipple></CameraRigNipple>}
+      )} */}
+      {<CameraRigNipple></CameraRigNipple>}
     </>
   );
 }

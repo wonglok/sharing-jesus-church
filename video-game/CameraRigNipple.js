@@ -1,12 +1,15 @@
-import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { createPortal, useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
 import { usePinch } from "react-use-gesture";
+import { RingBufferGeometry } from "three";
+import { CircleBufferGeometry } from "three";
+import { ConeBufferGeometry, Quaternion, Vector2 } from "three";
 import { Camera, Vector3 } from "three";
 import { OrbitControls } from "three-stdlib";
 import { Now } from "./Now";
 
 export function CameraRigNipple() {
-  let { camera, gl } = useThree();
+  let { camera, get, gl } = useThree();
   let works = useRef({});
   Now.makeKeyReactive("camMode");
   let zoom = useRef(1);
@@ -27,6 +30,7 @@ export function CameraRigNipple() {
       if (zoom.current <= 0.45) {
         zoom.current -= vdva[0] * -0.1;
       }
+
       if (zoom.current < 0.45) {
         zoom.current = 0.45;
       }
@@ -119,8 +123,9 @@ export function CameraRigNipple() {
     let orbit = new OrbitControls(fakeCam, gl.domElement);
     orbit.enableRotate = true;
     orbit.enablePan = false;
-    orbit.enableZoom = false;
-    orbit.rotateSpeed = 0.1;
+    orbit.enableDamping = true;
+    orbit.enableZoom = true;
+    // orbit.rotateSpeed = 0.1;
 
     // orbit.enableDamping = true;
     // orbit.minPolarAngle = Math.PI * 0.0;
@@ -136,7 +141,25 @@ export function CameraRigNipple() {
       left: 30px;
       width: 80px;
       height: 80px;
+      color: white;
+      z-index: 20;
     `;
+
+    let note = document.createElement("div");
+    document.body.appendChild(note);
+    note.style.cssText = `
+      position: absolute;
+      bottom: 50px;
+      left: 50px;
+      width: 80px;
+      height: 80px;
+      color: white;
+      z-index: 10;
+      text-align: center;
+      opacity: 0.4;
+    `;
+    note.innerHTML = `Walk Around JoyStick`;
+
     let nipplejs = require("nipplejs");
     var manager = nipplejs.create({
       zone: joystick,
@@ -163,45 +186,132 @@ export function CameraRigNipple() {
       Now.isDown = false;
     });
 
+    window.addEventListener("keydown", (ev) => {
+      // console.log(ev.key);
+
+      if (ev.key === "w") {
+        Now.keyW = true;
+      }
+      if (ev.key === "a") {
+        Now.keyA = true;
+      }
+      if (ev.key === "s") {
+        Now.keyS = true;
+      }
+      if (ev.key === "d") {
+        Now.keyD = true;
+      }
+    });
+    window.addEventListener("keyup", (ev) => {
+      // console.log(ev.key);
+
+      if (ev.key === "w") {
+        Now.keyW = false;
+      }
+      if (ev.key === "a") {
+        Now.keyA = false;
+      }
+      if (ev.key === "s") {
+        Now.keyS = false;
+      }
+      if (ev.key === "d") {
+        Now.keyD = false;
+      }
+    });
+
+    let keyBoardForward = new Vector3(0, 0, 1);
+    works.current.ctrl2 = () => {
+      //
+
+      camera.position.x = Now.avatarAt.x;
+      camera.position.y = Now.avatarAt.y + 5;
+      camera.position.z = Now.avatarAt.z;
+      // controls.getDirection(dir);
+
+      if (Now.keyW) {
+        keyBoardForward.set(0, 0, -1);
+        keyBoardForward.applyEuler(camera.rotation);
+        keyBoardForward.y = 0.0;
+
+        Now.goingTo.add(keyBoardForward);
+      } else if (Now.keyA) {
+        keyBoardForward.set(-1, 0, 0);
+        keyBoardForward.applyEuler(camera.rotation);
+        keyBoardForward.y = 0.0;
+
+        Now.goingTo.add(keyBoardForward);
+      } else if (Now.keyS) {
+        keyBoardForward.set(0, 0, 1);
+        keyBoardForward.applyEuler(camera.rotation);
+        keyBoardForward.y = 0.0;
+
+        Now.goingTo.add(keyBoardForward);
+      } else if (Now.keyD) {
+        keyBoardForward.set(1, 0, 0);
+        keyBoardForward.applyEuler(camera.rotation);
+        keyBoardForward.y = 0.0;
+
+        Now.goingTo.add(keyBoardForward);
+      }
+
+      if (!(Now.keyW || Now.keyA || Now.keyS || Now.keyD)) {
+        Now.goingTo.copy(Now.avatarAt);
+      }
+    };
+
+    let center = new Vector2(0, 0);
+    let hover = () => {
+      if (!Now.enableFloorCursor) {
+        let { camera, raycaster, scene } = get();
+
+        raycaster.setFromCamera(center, camera);
+        let res = [];
+        let src = [];
+        scene.traverse((it) => {
+          if (it.geometry && it.userData.hoverable) {
+            src.push(it);
+          }
+        });
+        raycaster.intersectObjects(src, true, res);
+        let first = res[0];
+        if (first) {
+          Now.cursorPos.copy(first.point);
+
+          let newType = "floor";
+
+          Now.cursorNormal.copy(first.face.normal);
+
+          let upness = first?.face?.normal?.y || 0;
+          if (upness >= 0.8) {
+            newType = "wall";
+          }
+
+          if (Now.cursorType !== newType) {
+            Now.cursorType = newType;
+          }
+        } else {
+          let newType = "hide";
+          if (Now.cursorType !== newType) {
+            Now.cursorType = newType;
+          }
+        }
+      }
+    };
+
+    works.current.ctrl3 = () => {
+      hover();
+    };
+
     works.current.ctrl = () => {
       orbit.update();
 
       Now.goingTo.add(forward);
 
       camera.position.x = Now.avatarAt.x;
-      camera.position.y = Now.avatarAt.y + 10;
+      camera.position.y = Now.avatarAt.y + 8;
       camera.position.z = Now.avatarAt.z;
 
       camera.rotation.copy(fakeCam.rotation);
-
-      // orbit.object.position.copy(Now.avatarAt);
-      // orbit.object.position.y += 15;
-      // orbit.target.copy(Now.avatarAt);
-      // orbit.target.y += 15;
-      // Now.goingTo.add(forward);
-      // camera.position.copy(Now.avatarAt);
-      // camera.position.y += 15;
-      // orbit.update();
-      // // let pos = nowAt.sub(origin).normalize().multiplyScalar(50);
-      // orbit.target.lerp(Now.avatarAt, 0.1);
-      // orbitAt.copy(Now.avatarAt);
-      // let zoomer = Math.pow(zoom.current, 0.9);
-      // //
-      // orbitAt.x *= 0.75 + zoomer;
-      // orbitAt.z *= 0.75 + zoomer;
-      // orbitAt.y += 8 - 2 / zoomer;
-      // orbit.object.position.lerp(orbitAt, 0.1);
-      // camera.lookAt(0, Now.avatarAt.y + 30, 0);
-      // orbit.object.lookAt({ x: 0, y: Now.avatarAt.y, z: 0 });
-      // let sub = new Vector3();
-      // sub.copy(Now.avatarAt).sub({ x: 0, y: Now.avatarAt.y, z: 0 }).normalize();
-      // orbit.object.position.y = Now.avatarAt.y + 5;
-      // orbit.object.lookAt(Now.avatarAt);
-      // orbit.object.position.lerp(sub.multiply(1), 0.05);
-      // orbit.object.position.y +=
-      //   (300 / 30) * 0.025 * Math.pow(zoom.current, 1);
-      // orbit.object.position.z +=
-      //   (1000 / 30) * 0.025 * Math.pow(zoom.current, 0.9);
     };
 
     Now.enableFloorCursor = false;
@@ -210,11 +320,102 @@ export function CameraRigNipple() {
       manager.off("start move end dir plain");
       manager.destroy();
       document.body.removeChild(joystick);
+
+      joystick.remove();
+      note.remove();
     };
   }, []);
 
   useFrame(() => {
     Object.values(works.current).forEach((e) => e());
   });
-  return <group></group>;
+  return (
+    <group>
+      {createPortal(
+        <group>
+          <MyCursor></MyCursor>
+        </group>,
+        get().scene
+      )}
+    </group>
+  );
+}
+
+function MyCursor() {
+  let cursor = useRef();
+
+  let t1 = new Vector3();
+  let t2 = new Vector3();
+  let time = 0;
+  useFrame((st, dt) => {
+    //
+    time += dt;
+    if (cursor.current) {
+      let mouse = cursor.current;
+
+      mouse.position.copy(Now.cursorPos);
+      // mouse.lookAt(Now.cursorNormal);
+
+      mouse.rotation.x = Now.cursorNormal.x;
+      mouse.rotation.y = Now.cursorNormal.y;
+      mouse.rotation.z = Now.cursorNormal.z;
+
+      // mouse.position.addScaledVector(
+      //   Now.cursorNormal,
+      //   1 + 0.5 * Math.sin(time * 3)
+      // );
+
+      if (Now.cursorType === "hide") {
+        mouse.visible = false;
+      } else {
+        mouse.visible = true;
+      }
+    }
+  });
+  let { circle, ring } = useMemo(() => {
+    let ring = new RingBufferGeometry(1.3, 1.5, 32, 32);
+    ring.rotateX(Math.PI * -0.5);
+    let circle = new CircleBufferGeometry(1, 32);
+    circle.rotateX(Math.PI * -0.5);
+    return {
+      ring,
+      circle,
+    };
+  }, []);
+  return (
+    <group ref={cursor}>
+      <group position={[0, 0.1, 0.0]}>
+        <Floating offset={0}>
+          <mesh geometry={ring}>
+            <meshBasicMaterial color={"white"}></meshBasicMaterial>
+          </mesh>
+        </Floating>
+        <Floating offset={0.1}>
+          <mesh geometry={circle}>
+            <meshBasicMaterial color={"white"}></meshBasicMaterial>
+          </mesh>
+        </Floating>
+      </group>
+    </group>
+  );
+}
+
+function Floating({ offset = 0, children }) {
+  let ref = useRef();
+
+  useEffect(() => {
+    //
+    //
+    //
+  }, []);
+
+  let time = 0;
+  useFrame((st, dt) => {
+    time += dt;
+    if (ref.current) {
+      ref.current.position.y = 1 + 0.5 * Math.sin(time * 3 + offset);
+    }
+  });
+
+  return <group ref={ref}>{children}</group>;
 }
