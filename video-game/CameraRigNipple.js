@@ -171,9 +171,9 @@ export function CameraRigNipple() {
     let forward = new Vector3(0, 0, 0);
     let up = new Vector3(0, 1, 0);
 
-    manager.on("start move end dir plain", function (evt, nipple) {
-      orbit.enabled = false;
+    manager.on("start move dir plain", function (evt, nipple) {
       if (nipple?.angle?.radian) {
+        orbit.enabled = false;
         forward.set(0, 0, -1);
         forward.applyAxisAngle(
           up,
@@ -183,11 +183,11 @@ export function CameraRigNipple() {
         Now.isDown = true;
       }
     });
-    manager.on("end", () => {
-      orbit.enabled = true;
 
+    manager.on("end hidden removed", () => {
       forward.multiplyScalar(0);
       Now.isDown = false;
+      orbit.enabled = true;
     });
 
     window.addEventListener("keydown", (ev) => {
