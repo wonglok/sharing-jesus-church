@@ -225,29 +225,32 @@ function MapStuff({ startAt }) {
       <Portal
         bloom={true}
         text={{
-          ready: "Continue with Google",
-          loading: "Loading...",
+          ready: "Login / Register",
+          loading: "Going There...",
         }}
         action={({ setLabel }) => {
           // let router = require("next/router").default;
-          // router.push("/room/chill");
+          // router.push("/login");
+
+          //
+          window.location.assign("/login");
           // setUpFirebase();
-          loginGoogle().then(
-            () => {
-              onReady().then(({ user, db, app }) => {
-                db.ref(`profiles/${user.uid}`).once("value", (snap) => {
-                  if (snap.val()) {
-                    window.location.assign("/room/heavenly");
-                  } else {
-                    window.location.assign("/avatar");
-                  }
-                });
-              });
-            },
-            () => {
-              setLabel("login failed");
-            }
-          );
+          // loginGoogle().then(
+          //   () => {
+          //     onReady().then(({ user, db, app }) => {
+          //       db.ref(`profiles/${user.uid}`).once("value", (snap) => {
+          //         if (snap.val()) {
+          //           window.location.assign("/room/heavenly");
+          //         } else {
+          //           window.location.assign("/avatar");
+          //         }
+          //       });
+          //     });
+          //   },
+          //   () => {
+          //     setLabel("login failed");
+          //   }
+          // );
         }}
         zone={{
           x: -19.545532327531284,

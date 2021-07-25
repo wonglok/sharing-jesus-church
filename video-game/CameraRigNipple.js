@@ -142,6 +142,7 @@ export function CameraRigNipple() {
       width: 80px;
       height: 80px;
       color: white;
+      user-select: none;
       z-index: 20;
     `;
 
@@ -154,6 +155,7 @@ export function CameraRigNipple() {
       width: 80px;
       height: 80px;
       color: white;
+      user-select: none;
       z-index: 10;
       text-align: center;
       opacity: 0.4;
@@ -171,6 +173,7 @@ export function CameraRigNipple() {
     let forward = new Vector3(0, 0, 0);
     let up = new Vector3(0, 1, 0);
 
+    let ttt = 0;
     manager.on("start move dir plain", function (evt, nipple) {
       if (nipple?.angle?.radian) {
         orbit.enabled = false;
@@ -181,6 +184,11 @@ export function CameraRigNipple() {
             0.0
         );
         Now.isDown = true;
+
+        clearTimeout(ttt);
+        ttt = setTimeout(() => {
+          orbit.enabled = true;
+        }, 100);
       }
     });
 
@@ -188,6 +196,11 @@ export function CameraRigNipple() {
       forward.multiplyScalar(0);
       Now.isDown = false;
       orbit.enabled = true;
+
+      clearTimeout(ttt);
+      ttt = setTimeout(() => {
+        orbit.update();
+      }, 100);
     });
 
     window.addEventListener("keydown", (ev) => {
@@ -260,50 +273,11 @@ export function CameraRigNipple() {
       }
     };
 
-    // let center = new Vector2(0, 0);
-    // let hover = () => {
-    //   if (!Now.enableFloorCursor) {
-    //     let { camera, raycaster, scene } = get();
-
-    //     raycaster.setFromCamera(center, camera);
-    //     let res = [];
-    //     let src = [];
-    //     scene.traverse((it) => {
-    //       if (it.geometry && it.userData.hoverable) {
-    //         src.push(it);
-    //       }
-    //     });
-    //     raycaster.intersectObjects(src, true, res);
-    //     let first = res[0];
-    //     if (first) {
-    //       Now.cursorPos.copy(first.point);
-
-    //       let newType = "hover";
-
-    //       Now.cursorNormal.copy(first.face.normal);
-
-    //       let upness = first?.face?.normal?.y || 0;
-
-    //       if (upness < 0) {
-    //         newType = "hide";
-    //       }
-
-    //       if (Now.cursorType !== newType) {
-    //         Now.cursorType = newType;
-    //       }
-    //     } else {
-    //       let newType = "hide";
-    //       if (Now.cursorType !== newType) {
-    //         Now.cursorType = newType;
-    //       }
-    //     }
-    //   }
-    // };
-
     // grid of raycaster
 
     works.current.ctrl3 = () => {
       let newType = "floor";
+
       let upness = Now.cursorNormal.y || 0;
       if (Now.cursorType !== newType) {
         Now.cursorType = newType;
