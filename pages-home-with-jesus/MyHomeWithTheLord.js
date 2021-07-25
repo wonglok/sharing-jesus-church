@@ -89,7 +89,21 @@ function MapStuff({ startAt }) {
       if (it.material) {
         it.material = it.material.clone();
 
+        console.log(it.material.name, it.name);
+
         it.userData.hoverable = true;
+
+        if (it.material.name === "leaves") {
+          it.userData.hoverable = false;
+        }
+        if (it.material.name === "trunk") {
+          it.userData.hoverable = false;
+        }
+
+        if (it.name === "slope") {
+          it.userData.hoverable = false;
+        }
+
         it.geometry.computeVertexNormals();
 
         it.material.roughness = 0.0;

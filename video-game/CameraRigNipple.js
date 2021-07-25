@@ -2,6 +2,7 @@ import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import { usePinch } from "react-use-gesture";
 import { RingBufferGeometry } from "three";
+import { AdditiveBlending } from "three";
 import { CircleBufferGeometry } from "three";
 import { ConeBufferGeometry, Quaternion, Vector2 } from "three";
 import { Camera, Vector3 } from "three";
@@ -14,45 +15,45 @@ export function CameraRigNipple() {
   Now.makeKeyReactive("camMode");
   let zoom = useRef(1);
 
-  usePinch(
-    (state) => {
-      const {
-        da, // [d,a] absolute distance and angle of the two pointers
-        vdva, // momentum of the gesture of distance and rotation
-        origin, // coordinates of the center between the two touch event
-      } = state;
+  // usePinch(
+  //   (state) => {
+  //     const {
+  //       da, // [d,a] absolute distance and angle of the two pointers
+  //       vdva, // momentum of the gesture of distance and rotation
+  //       origin, // coordinates of the center between the two touch event
+  //     } = state;
 
-      // console.log(vdva[0]);
-      // console.log(vdva[0]);
+  //     // console.log(vdva[0]);
+  //     // console.log(vdva[0]);
 
-      zoom.current += vdva[0] * -0.1;
+  //     zoom.current += vdva[0] * -0.1;
 
-      if (zoom.current <= 0.45) {
-        zoom.current -= vdva[0] * -0.1;
-      }
+  //     if (zoom.current <= 0.45) {
+  //       zoom.current -= vdva[0] * -0.1;
+  //     }
 
-      if (zoom.current < 0.45) {
-        zoom.current = 0.45;
-      }
+  //     if (zoom.current < 0.45) {
+  //       zoom.current = 0.45;
+  //     }
 
-      if (zoom.current >= 6.5) {
-        zoom.current -= vdva[0] * -0.1;
-      }
+  //     if (zoom.current >= 6.5) {
+  //       zoom.current -= vdva[0] * -0.1;
+  //     }
 
-      if (zoom.current > 6.5) {
-        zoom.current = 6.5;
-      }
-    },
-    {
-      domTarget: gl.domElement,
-      eventOptions: {
-        passive: false,
-      },
-    }
-  );
+  //     if (zoom.current > 6.5) {
+  //       zoom.current = 6.5;
+  //     }
+  //   },
+  //   {
+  //     domTarget: gl.domElement,
+  //     eventOptions: {
+  //       passive: false,
+  //     },
+  //   }
+  // );
 
   useEffect(() => {
-    gl.domElement.addEventListener(
+    gl.domElement.parentElement.addEventListener(
       "touchstart",
       (ev) => {
         ev.preventDefault();
@@ -60,7 +61,7 @@ export function CameraRigNipple() {
       { passive: false }
     );
 
-    gl.domElement.addEventListener(
+    gl.domElement.parentElement.addEventListener(
       "touchmove",
       (ev) => {
         ev.preventDefault();
@@ -68,7 +69,7 @@ export function CameraRigNipple() {
       { passive: false }
     );
 
-    gl.domElement.addEventListener(
+    gl.domElement.parentElement.addEventListener(
       "touchstart",
       (ev) => {
         ev.preventDefault();
@@ -102,9 +103,6 @@ export function CameraRigNipple() {
         if (zoom.current <= 0.45) {
           zoom.current -= ev.deltaY * 0.0005;
         }
-
-        //
-
         //
       },
       { passive: false }
@@ -123,9 +121,10 @@ export function CameraRigNipple() {
     let orbit = new OrbitControls(fakeCam, gl.domElement);
     orbit.enableRotate = true;
     orbit.enablePan = false;
+    orbit.enableZoom = false;
+
     orbit.enableDamping = true;
-    orbit.enableZoom = true;
-    // orbit.rotateSpeed = 0.1;
+    orbit.rotateSpeed = 0.5;
 
     // orbit.enableDamping = true;
     // orbit.minPolarAngle = Math.PI * 0.0;
@@ -134,6 +133,7 @@ export function CameraRigNipple() {
     // orbit.maxAzimuthAngle = Math.PI * 0.5;
 
     let joystick = document.createElement("div");
+
     document.body.appendChild(joystick);
     joystick.style.cssText = `
       position: absolute;
@@ -172,16 +172,20 @@ export function CameraRigNipple() {
     let up = new Vector3(0, 1, 0);
 
     manager.on("start move end dir plain", function (evt, nipple) {
+      orbit.enabled = false;
       if (nipple?.angle?.radian) {
         forward.set(0, 0, -1);
         forward.applyAxisAngle(
           up,
-          nipple?.angle?.radian - Math.PI * 0.5 || 0.0
+          orbit.getAzimuthalAngle() + nipple?.angle?.radian - Math.PI * 0.5 ||
+            0.0
         );
         Now.isDown = true;
       }
     });
     manager.on("end", () => {
+      orbit.enabled = true;
+
       forward.multiplyScalar(0);
       Now.isDown = false;
     });
@@ -274,13 +278,14 @@ export function CameraRigNipple() {
         if (first) {
           Now.cursorPos.copy(first.point);
 
-          let newType = "floor";
+          let newType = "hover";
 
           Now.cursorNormal.copy(first.face.normal);
 
           let upness = first?.face?.normal?.y || 0;
-          if (upness >= 0.8) {
-            newType = "wall";
+
+          if (upness < 0) {
+            newType = "hide";
           }
 
           if (Now.cursorType !== newType) {
@@ -294,6 +299,8 @@ export function CameraRigNipple() {
         }
       }
     };
+
+    // grid of raycaster
 
     works.current.ctrl3 = () => {
       hover();
@@ -350,17 +357,16 @@ function MyCursor() {
     if (cursor.current) {
       let mouse = cursor.current;
 
-      mouse.position.copy(Now.cursorPos);
-      // mouse.lookAt(Now.cursorNormal);
+      mouse.position.copy(Now.cursorPos).addScaledVector(Now.cursorNormal, 0.1);
+      mouse.lookAt(
+        Now.cursorPos.x + Now.cursorNormal.x,
+        Now.cursorPos.y + Now.cursorNormal.y,
+        Now.cursorPos.z + Now.cursorNormal.z
+      );
 
-      mouse.rotation.x = Now.cursorNormal.x;
-      mouse.rotation.y = Now.cursorNormal.y;
-      mouse.rotation.z = Now.cursorNormal.z;
-
-      // mouse.position.addScaledVector(
-      //   Now.cursorNormal,
-      //   1 + 0.5 * Math.sin(time * 3)
-      // );
+      // mouse.rotation.x = Now.cursorNormal.x;
+      // mouse.rotation.y = Now.cursorNormal.y;
+      // mouse.rotation.z = Now.cursorNormal.z;
 
       if (Now.cursorType === "hide") {
         mouse.visible = false;
@@ -369,11 +375,13 @@ function MyCursor() {
       }
     }
   });
+  //
+
   let { circle, ring } = useMemo(() => {
     let ring = new RingBufferGeometry(1.3, 1.5, 32, 32);
-    ring.rotateX(Math.PI * -0.5);
+    // ring.rotateX(Math.PI * -0.5);
     let circle = new CircleBufferGeometry(1, 32);
-    circle.rotateX(Math.PI * -0.5);
+    // circle.rotateX(Math.PI * -0.5);
     return {
       ring,
       circle,
@@ -381,20 +389,35 @@ function MyCursor() {
   }, []);
   return (
     <group ref={cursor}>
-      <group position={[0, 0.1, 0.0]}>
-        <Floating offset={0}>
-          <mesh geometry={ring}>
-            <meshBasicMaterial color={"white"}></meshBasicMaterial>
-          </mesh>
-        </Floating>
-        <Floating offset={0.1}>
-          <mesh geometry={circle}>
-            <meshBasicMaterial color={"white"}></meshBasicMaterial>
-          </mesh>
-        </Floating>
-      </group>
+      <HideGate>
+        <group position={[0, 0.1, 0.0]}>
+          <Floating offset={0}>
+            <mesh geometry={circle} position-z={0.0}>
+              <meshBasicMaterial
+                blending={AdditiveBlending}
+                color={"white"}
+              ></meshBasicMaterial>
+            </mesh>
+          </Floating>
+
+          <Floating offset={0.1}>
+            <mesh geometry={ring} position-z={0.0}>
+              <meshBasicMaterial
+                blending={AdditiveBlending}
+                color={"white"}
+              ></meshBasicMaterial>
+            </mesh>
+          </Floating>
+        </group>
+      </HideGate>
     </group>
   );
+}
+
+function HideGate({ children }) {
+  Now.makeKeyReactive("cursorType");
+
+  return <>{Now.cursorType !== "hide" && children}</>;
 }
 
 function Floating({ offset = 0, children }) {
@@ -410,7 +433,7 @@ function Floating({ offset = 0, children }) {
   useFrame((st, dt) => {
     time += dt;
     if (ref.current) {
-      ref.current.position.y = 1 + 0.5 * Math.sin(time * 3 + offset);
+      ref.current.position.z = 1 + 0.5 * Math.sin(time * 3 + offset);
     }
   });
 

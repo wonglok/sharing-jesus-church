@@ -8,16 +8,7 @@ import { useState } from "react";
 export default function Home() {
   return (
     <div className="w-full h-full">
-      {/*  */}
-      {/*  */}
-      {/*  */}
-      {/*  */}
-      {/*  */}
-      {/*  */}
-
       <CanvasArea></CanvasArea>
-      {/* <FPCursor></FPCursor> */}
-      {/* <LockScreenHTML></LockScreenHTML> */}
     </div>
   );
 }

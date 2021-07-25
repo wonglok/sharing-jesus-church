@@ -215,7 +215,6 @@ export function MapSimulation({
         y = e.clientY;
 
         Now.isDown = false;
-
         Now.needsSync = true;
       },
       goMove: (e) => {
@@ -243,9 +242,6 @@ export function MapSimulation({
     renderer.domElement.addEventListener("pointermove", h.goMove, {
       passive: false,
     });
-
-    renderer.domElement.addEventListener("mousedown", h.clicker);
-    renderer.domElement.addEventListener("touchstart", h.clicker);
 
     let rAFID = 0;
     let rAF = () => {
