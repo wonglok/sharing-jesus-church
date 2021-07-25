@@ -139,23 +139,22 @@ function Chibi() {
   let chibi = useFBX(`/chibi/ChibiBase-rigged.fbx`);
   let idle = useFBX(`/chibi/actions-for-this/contorls/idle-happy.fbx`);
 
-  let three = useThree((s) => {
+  let { get } = useThree();
+
+  let mixer = useRef(new AnimationMixer());
+  useEffect(() => {
     chibi.traverse((k) => {
       if (k.material) {
         k.material.side = DoubleSide;
       }
     });
 
-    let mixer = new AnimationMixer();
-    let action = mixer.clipAction(idle.animations[0], chibi);
+    let action = mixer.current.clipAction(idle.animations[0], chibi);
     action.play();
-
-    s.mixer = mixer;
-    // mixer
-    return s;
   });
+
   useFrame((st, dt) => {
-    three.mixer.update(dt);
+    mixer.current.update(dt);
   });
 
   useEffect(() => {

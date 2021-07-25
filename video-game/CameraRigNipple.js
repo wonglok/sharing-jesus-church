@@ -260,50 +260,56 @@ export function CameraRigNipple() {
       }
     };
 
-    let center = new Vector2(0, 0);
-    let hover = () => {
-      if (!Now.enableFloorCursor) {
-        let { camera, raycaster, scene } = get();
+    // let center = new Vector2(0, 0);
+    // let hover = () => {
+    //   if (!Now.enableFloorCursor) {
+    //     let { camera, raycaster, scene } = get();
 
-        raycaster.setFromCamera(center, camera);
-        let res = [];
-        let src = [];
-        scene.traverse((it) => {
-          if (it.geometry && it.userData.hoverable) {
-            src.push(it);
-          }
-        });
-        raycaster.intersectObjects(src, true, res);
-        let first = res[0];
-        if (first) {
-          Now.cursorPos.copy(first.point);
+    //     raycaster.setFromCamera(center, camera);
+    //     let res = [];
+    //     let src = [];
+    //     scene.traverse((it) => {
+    //       if (it.geometry && it.userData.hoverable) {
+    //         src.push(it);
+    //       }
+    //     });
+    //     raycaster.intersectObjects(src, true, res);
+    //     let first = res[0];
+    //     if (first) {
+    //       Now.cursorPos.copy(first.point);
 
-          let newType = "hover";
+    //       let newType = "hover";
 
-          Now.cursorNormal.copy(first.face.normal);
+    //       Now.cursorNormal.copy(first.face.normal);
 
-          let upness = first?.face?.normal?.y || 0;
+    //       let upness = first?.face?.normal?.y || 0;
 
-          if (upness < 0) {
-            newType = "hide";
-          }
+    //       if (upness < 0) {
+    //         newType = "hide";
+    //       }
 
-          if (Now.cursorType !== newType) {
-            Now.cursorType = newType;
-          }
-        } else {
-          let newType = "hide";
-          if (Now.cursorType !== newType) {
-            Now.cursorType = newType;
-          }
-        }
-      }
-    };
+    //       if (Now.cursorType !== newType) {
+    //         Now.cursorType = newType;
+    //       }
+    //     } else {
+    //       let newType = "hide";
+    //       if (Now.cursorType !== newType) {
+    //         Now.cursorType = newType;
+    //       }
+    //     }
+    //   }
+    // };
 
     // grid of raycaster
 
     works.current.ctrl3 = () => {
-      hover();
+      let newType = "floor";
+      let upness = Now.cursorNormal.y || 0;
+      if (Now.cursorType !== newType) {
+        Now.cursorType = newType;
+      }
+
+      // hover();
     };
 
     works.current.ctrl = () => {

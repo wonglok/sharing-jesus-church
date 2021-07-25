@@ -6,15 +6,25 @@ import { useMemo } from "react";
 import { SkeletonUtils } from "three-stdlib";
 import { Now } from "../video-game/Now";
 import { MainAvatarLogic, MapSimulation } from "../video-game/UseCases";
-import { useFrame } from "@react-three/fiber";
+import { act, createPortal, useFrame, useThree } from "@react-three/fiber";
 // import { EnvMap } from "../video-game/EnvMap";
 import { CubeMap } from "../video-game/CubeMap";
 import { enableBloom, Bloomer } from "../vfx-library/Bloomer";
 import {
+  Color,
   CubeReflectionMapping,
   CubeRefractionMapping,
   DoubleSide,
+  Vector3,
 } from "three";
+import { Portal } from "../video-game/Portal";
+import { Sphere } from "three";
+import {
+  loginGoogle,
+  loginGuest,
+  onReady,
+  setUpFirebase,
+} from "../video-game/AppFirebase";
 
 export function MyHomeWithTheLord() {
   let startAt = useMemo(() => {
@@ -69,13 +79,13 @@ function AvatarStuff({ startAt }) {
 function useCubeMap({ path = `/cubemap/`, type = "png" }) {
   let list = ["px", "nx", "py", "ny", "pz", "nz"].map((e) => `${e}.${type}`);
   const cubeMap = useCubeTexture(list, { path });
-
   return cubeMap;
 }
 
 function MapStuff({ startAt }) {
+  let { get } = useThree();
   let ref = useRef();
-  let mapURL = `/map/detailed-glass-house8.glb`;
+  let mapURL = `/map/detailed-glass-house9.glb`;
   let raw = useGLTF(mapURL);
   let refraction = useCubeMap({ path: `/cubemaps/lake/`, type: "png" });
   refraction.mapping = CubeRefractionMapping;
@@ -107,13 +117,10 @@ function MapStuff({ startAt }) {
 
         if (it.name === "connect") {
           enableBloom(it);
-          it.userData.skipFloorGen = true;
+          it.userData.hoverable = false;
         }
-
-        if (it.name === "login-area") {
+        if (it.name === "connect-base") {
           enableBloom(it);
-          it.material.opacity = 0.5;
-          it.userData.skipFloorGen = true;
         }
 
         it.geometry.computeVertexNormals();
@@ -123,6 +130,15 @@ function MapStuff({ startAt }) {
         it.material.side = DoubleSide;
 
         it.material.envMap = refraction;
+
+        if (it.material.name === "leaves") {
+          it.material.roughness = 0;
+          it.material.metalness = 1;
+        }
+        if (it.material.name === "trunk") {
+          it.material.roughness = 0;
+          it.material.metalness = 1;
+        }
 
         // if (it.name.toLowerCase().indexOf("icosphere") !== -1) {
         //   it.material.envMap = reflection;
@@ -142,7 +158,9 @@ function MapStuff({ startAt }) {
   }, [mapURL]);
 
   useEffect(() => {
-    ref.current.add(floor);
+    if (ref.current) {
+      ref.current.add(floor);
+    }
     return () => {
       if (ref.current) {
         ref.current.remove(floor);
@@ -166,27 +184,152 @@ function MapStuff({ startAt }) {
     }
   });
 
+  // floor.getObjectByName("connect")
+
   return (
     <>
+      <Portal
+        bloom={true}
+        text={{
+          ready: "Plase as Guest",
+          loading: "Teleporting...",
+        }}
+        action={({ setLabel }) => {
+          // let router = require("next/router").default;
+          // router.push("/room/chill");
+          // setUpFirebase();
+          loginGuest().then(
+            () => {
+              onReady().then(({ user, db, app }) => {
+                db.ref(`profiles/${user.uid}`).once("value", (snap) => {
+                  if (snap.val()) {
+                    window.location.assign("/room/heavenly");
+                  } else {
+                    window.location.assign("/avatar");
+                  }
+                });
+              });
+            },
+            () => {
+              setLabel("login failed...");
+            }
+          );
+        }}
+        zone={{
+          x: -34.48357929577177,
+          y: 40.5634749531852,
+          z: 54.45510810955399,
+        }}
+      ></Portal>
+
+      <Portal
+        bloom={true}
+        text={{
+          ready: "Continue with Google",
+          loading: "Loading...",
+        }}
+        action={({ setLabel }) => {
+          // let router = require("next/router").default;
+          // router.push("/room/chill");
+          // setUpFirebase();
+          loginGoogle().then(
+            () => {
+              onReady().then(({ user, db, app }) => {
+                db.ref(`profiles/${user.uid}`).once("value", (snap) => {
+                  if (snap.val()) {
+                    window.location.assign("/room/heavenly");
+                  } else {
+                    window.location.assign("/avatar");
+                  }
+                });
+              });
+            },
+            () => {
+              setLabel("login failed");
+            }
+          );
+        }}
+        zone={{
+          x: -19.545532327531284,
+          y: 40.563474555127634,
+          z: 55.185233488124396,
+        }}
+      ></Portal>
+      <directionalLight position={[10, 10, 0]}></directionalLight>
+      <directionalLight position={[-10, 10, 0]}></directionalLight>
       <MapSimulation
         floor={floor}
         debugCollider={false}
         startAt={startAt}
       ></MapSimulation>
 
-      <CubeCamera near={0.1} far={1024} frames={1} position={pos.current}>
+      {/* <CubeCamera near={0.1} far={1024} frames={1} position={pos.current}>
         {(texture) => {
           floor.traverse((it) => {
             if (it.material) {
               it.material.envMap = texture;
             }
           });
-          return <group ref={ref}></group>;
+          return ;
         }}
-      </CubeCamera>
+      </CubeCamera> */}
+
+      <group ref={ref}></group>
+
       <Bloomer></Bloomer>
 
       <CubeMap path="/cubemaps/lake/"></CubeMap>
     </>
+  );
+}
+
+function DetectArea({
+  preload = () => {},
+  loading = () => {},
+  reset = () => {},
+  action = () => {},
+}) {
+  let ref = useRef();
+
+  let count = 0;
+  let exec = false;
+  let worldPos = new Vector3();
+
+  let sphere = useRef(new Sphere(worldPos, 20));
+  useFrame((st, dt) => {
+    //
+    if (ref.current) {
+      sphere.current.center.copy(worldPos);
+      ref.current.getWorldPosition(worldPos);
+
+      if (sphere.current.containsPoint(Now.avatarAt)) {
+        if (count === 0) {
+          preload();
+        }
+
+        loading(count);
+        if (!exec) {
+          count++;
+        }
+
+        if (count >= 60 * 2) {
+          //
+          exec = true;
+          action();
+          //
+        }
+      } else {
+        count = 0;
+        exec = false;
+        reset(count);
+      }
+    }
+  });
+  return (
+    <group ref={ref}>
+      {/*  */}
+      {/*  */}
+      {/*  */}
+    </group>
   );
 }

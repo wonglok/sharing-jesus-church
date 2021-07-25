@@ -176,6 +176,41 @@ export function MapSimulation({
       return hit;
     };
 
+    let center = new Vector2(0, 0);
+    let hover = () => {
+      if (!Now.enableFloorCursor) {
+        let { camera, raycaster, scene } = get();
+
+        raycaster.setFromCamera(center, camera);
+        let res = [];
+        let src = [];
+        scene.traverse((it) => {
+          if (it.geometry && it.userData.hoverable) {
+            src.push(it);
+          }
+        });
+        raycaster.intersectObjects(src, true, res);
+
+        collider.geometry.boundsTree.raycastFirst(
+          collider,
+          raycaster,
+          raycaster.ray
+        );
+
+        let first = res[0];
+        if (first) {
+          Now.cursorPos.copy(first.point);
+
+          Now.cursorNormal.copy(first.face.normal);
+        } else {
+          // let newType = "hide";
+          // if (Now.cursorType !== newType) {
+          //   Now.cursorType = newType;
+          // }
+        }
+      }
+    };
+
     let h = {
       click: (e) => {
         // mouse.x = (x / window.innerWidth) * 2 - 1;
@@ -227,7 +262,9 @@ export function MapSimulation({
         }
       },
 
-      clicker: () => {},
+      clicker: () => {
+        console.log(Now.cursorPos);
+      },
     };
 
     renderer.domElement.addEventListener("pointerdown", h.goDown, {
@@ -242,6 +279,9 @@ export function MapSimulation({
     renderer.domElement.addEventListener("pointermove", h.goMove, {
       passive: false,
     });
+    renderer.domElement.addEventListener("click", h.clicker, {
+      passive: false,
+    });
 
     let rAFID = 0;
     let rAF = () => {
@@ -249,6 +289,7 @@ export function MapSimulation({
       if (Now.isDown) {
         h.goMove(false);
       }
+      hover();
     };
     rAFID = requestAnimationFrame(rAF);
 

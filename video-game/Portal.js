@@ -3,11 +3,13 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Sphere } from "three";
 import { Color, DoubleSide, Vector3 } from "three";
+import { enableBloom } from "../vfx-library/Bloomer";
 // import { ShaderCubeChrome } from "../vfx-library/ShaderCubeChrome";
 import { Now } from "./Now";
 // import { lerp } from "";
 
 export function Portal({
+  bloom = false,
   magnify = 1.0,
   text = {
     ready: "Login",
@@ -31,9 +33,15 @@ export function Portal({
   let pt = new Vector3().copy(zone);
 
   useEffect(() => {
-    // enableBloom(ring1.current);
-    // enableBloom(ring2.current);
-    // enableBloom(ring3.current);
+    if (bloom) {
+      enableBloom(ring1.current);
+      enableBloom(ring2.current);
+      enableBloom(ring3.current);
+
+      ring1.current.material.color = new Color("#444444");
+      ring2.current.material.color = new Color("#444444");
+      ring3.current.material.color = new Color("#444444");
+    }
   }, []);
 
   useFrame((st, dt) => {
@@ -109,12 +117,13 @@ function CountDownText({
 }) {
   let [label, setLabel] = useState(text.ready);
   let ticker = useRef(0);
-  let total = 60 * 5;
+  let total = 60 * 3;
   let sphere = new Sphere(pt, 10);
 
   // Hand.useChangeKey("overlay", () => {
   //   ticker.current = 0;
   // });
+
   let lerp = require("three/src/math/MathUtils").lerp;
 
   let did = useRef(false);
@@ -123,6 +132,7 @@ function CountDownText({
     sphere.center.copy(pt);
     if (sphere.containsPoint(Now.avatarAt)) {
       ticker.current = ticker.current || 0;
+
       ticker.current += 1;
 
       if (label !== text.loading) {
@@ -139,7 +149,7 @@ function CountDownText({
           did.current = true;
 
           if (typeof action === "function") {
-            action();
+            action({ setLabel });
           }
           // getVoicesAPI().teleport.play();
         }

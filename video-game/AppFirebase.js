@@ -13,8 +13,6 @@ const firebaseConfig = {
   appId: "1:316567530740:web:765ff986a897b0e05242a1",
 };
 
-export { firebase };
-
 export const getFire = () => {
   setup();
   return firebase;
@@ -91,11 +89,17 @@ export const onReady = () => {
 };
 
 export const loginGuest = async () => {
+  setup();
   return firebase.auth().signInAnonymously();
 };
 
 export const loginGoogle = () => {
+  setup();
   var provider = new firebase.auth.GoogleAuthProvider();
 
   return firebase.auth().signInWithPopup(provider);
 };
+
+let setUpFirebase = setup;
+
+export { firebase, setUpFirebase };
