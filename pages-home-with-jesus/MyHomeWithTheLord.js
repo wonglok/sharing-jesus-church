@@ -30,8 +30,8 @@ export function MyHomeWithTheLord() {
   let startAt = useMemo(() => {
     return {
       x: 0,
-      y: 14.807240279333058 + 10,
-      z: 257.6796410375871,
+      y: 19.964252428099343,
+      z: 403.38055254659946,
     };
   }, []);
 
@@ -232,8 +232,9 @@ function MapStuff({ startAt }) {
           // let router = require("next/router").default;
           // router.push("/login");
 
-          //
           window.location.assign("/login");
+
+          //
           // setUpFirebase();
           // loginGoogle().then(
           //   () => {
