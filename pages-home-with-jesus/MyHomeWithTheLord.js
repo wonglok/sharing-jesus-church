@@ -9,6 +9,7 @@ import { MainAvatarLogic, MapSimulation } from "../video-game/UseCases";
 import { useFrame } from "@react-three/fiber";
 // import { EnvMap } from "../video-game/EnvMap";
 import { CubeMap } from "../video-game/CubeMap";
+import { enableBloom, Bloomer } from "../vfx-library/Bloomer";
 import {
   CubeReflectionMapping,
   CubeRefractionMapping,
@@ -74,7 +75,7 @@ function useCubeMap({ path = `/cubemap/`, type = "png" }) {
 
 function MapStuff({ startAt }) {
   let ref = useRef();
-  let mapURL = `/map/detailed-glass-house7.glb`;
+  let mapURL = `/map/detailed-glass-house8.glb`;
   let raw = useGLTF(mapURL);
   let refraction = useCubeMap({ path: `/cubemaps/lake/`, type: "png" });
   refraction.mapping = CubeRefractionMapping;
@@ -102,6 +103,17 @@ function MapStuff({ startAt }) {
 
         if (it.name === "slope") {
           it.userData.hoverable = false;
+        }
+
+        if (it.name === "connect") {
+          enableBloom(it);
+          it.userData.skipFloorGen = true;
+        }
+
+        if (it.name === "login-area") {
+          enableBloom(it);
+          it.material.opacity = 0.5;
+          it.userData.skipFloorGen = true;
         }
 
         it.geometry.computeVertexNormals();
@@ -172,6 +184,7 @@ function MapStuff({ startAt }) {
           return <group ref={ref}></group>;
         }}
       </CubeCamera>
+      <Bloomer></Bloomer>
 
       <CubeMap path="/cubemaps/lake/"></CubeMap>
     </>
