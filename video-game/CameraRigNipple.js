@@ -223,9 +223,6 @@ export function CameraRigNipple() {
     works.current.ctrl2 = () => {
       //
 
-      camera.position.x = Now.avatarAt.x;
-      camera.position.y = Now.avatarAt.y + 5;
-      camera.position.z = Now.avatarAt.z;
       // controls.getDirection(dir);
 
       if (Now.keyW) {
@@ -308,7 +305,7 @@ export function CameraRigNipple() {
       Now.goingTo.add(forward);
 
       camera.position.x = Now.avatarAt.x;
-      camera.position.y = Now.avatarAt.y + 8;
+      camera.position.y = Now.avatarAt.y + 5;
       camera.position.z = Now.avatarAt.z;
 
       camera.rotation.copy(fakeCam.rotation);

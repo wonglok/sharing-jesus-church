@@ -92,22 +92,24 @@ function MapStuff({ startAt }) {
         it.userData.hoverable = true;
         it.geometry.computeVertexNormals();
 
-        if (it.name.toLowerCase().indexOf("icosphere") !== -1) {
-          it.material.envMap = reflection;
-          it.userData.rotationY = Math.random() * 2.0 - 1.0;
+        it.material.roughness = 0.0;
+        it.material.metalness = 1;
+        it.material.side = DoubleSide;
 
-          it.material.roughness = 0.1;
-          it.material.metalness = 1;
-          it.material.flatShading = true;
-          it.material.side = DoubleSide;
-          it.material.flatShading = true;
-        } else {
-          it.material.roughness = 0.1;
-          it.material.metalness = 1;
-          it.material.side = DoubleSide;
+        it.material.envMap = refraction;
 
-          it.material.envMap = refraction;
-        }
+        // if (it.name.toLowerCase().indexOf("icosphere") !== -1) {
+        //   it.material.envMap = reflection;
+        //   it.userData.rotationY = Math.random() * 2.0 - 1.0;
+
+        //   it.material.roughness = 0.1;
+        //   it.material.metalness = 1;
+        //   it.material.flatShading = true;
+        //   it.material.side = DoubleSide;
+        //   it.material.flatShading = true;
+        // } else {
+
+        // }
       }
     });
     return cloned;
@@ -146,7 +148,7 @@ function MapStuff({ startAt }) {
         startAt={startAt}
       ></MapSimulation>
 
-      <CubeCamera near={0.1} far={4096} frames={1} position={pos.current}>
+      <CubeCamera near={0.1} far={1024} frames={1} position={pos.current}>
         {(texture) => {
           floor.traverse((it) => {
             if (it.material) {
