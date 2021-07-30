@@ -1,6 +1,7 @@
 import { Text } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MathUtils } from "three";
 import { Sphere } from "three";
 import { Color, DoubleSide, Vector3 } from "three";
 import { enableBloom } from "../vfx-library/Bloomer";
@@ -111,10 +112,14 @@ function CountDownText({
     ready: "Login",
     loading: "Opening Login...",
   },
+  preload = () => {
+    console.log("preload");
+  },
   action = () => {
     console.log("action");
   },
 }) {
+  let ref = useRef();
   let [label, setLabel] = useState(text.ready);
   let ticker = useRef(0);
   let total = 60 * 3;
@@ -133,11 +138,17 @@ function CountDownText({
     if (sphere.containsPoint(Now.avatarAt)) {
       ticker.current = ticker.current || 0;
 
+      if (ticker.current === 1) {
+        preload();
+      }
+
       ticker.current += 1;
 
       if (label !== text.loading) {
         setLabel(text.loading);
+
         // getVoicesAPI().charge.play();
+      } else {
       }
 
       if (!charge.current) {
@@ -151,10 +162,33 @@ function CountDownText({
           if (typeof action === "function") {
             action({ setLabel });
           }
+
           // getVoicesAPI().teleport.play();
         }
       }
+
+      if (ref.current) {
+        ref.current.position.y = MathUtils.lerp(
+          ref.current.position.y,
+          5 * 0.8 * 1.5 - 4,
+          0.1
+        );
+        ref.current.position.z = MathUtils.lerp(
+          ref.current.position.z,
+          -10,
+          0.1
+        );
+      }
     } else {
+      if (ref.current) {
+        ref.current.position.y = MathUtils.lerp(
+          ref.current.position.y,
+          5 * 0.8 * 1.5 - 0,
+          0.1
+        );
+        ref.current.position.z = MathUtils.lerp(ref.current.position.z, 0, 0.1);
+      }
+
       ticker.current = 0;
       did.current = false;
       charge.current = false;
@@ -175,6 +209,7 @@ function CountDownText({
 
   return (
     <Text
+      ref={ref}
       position-y={5 * 0.8 * 1.5}
       scale={80 * 2 * 0.2 * 0.5}
       font={`/font/Cronos-Pro-Light_12448.ttf`}
@@ -187,3 +222,89 @@ function CountDownText({
     </Text>
   );
 }
+
+// function CountDownText({
+//   pt,
+
+//   ring,
+//   magnify = 1.0,
+//   text = {
+//     ready: "Login",
+//     loading: "Opening Login...",
+//   },
+//   action = () => {
+//     console.log("action");
+//   },
+// }) {
+//   let [label, setLabel] = useState(text.ready);
+//   let ticker = useRef(0);
+//   let total = 60 * 3;
+//   let sphere = new Sphere(pt, 10);
+
+//   // Hand.useChangeKey("overlay", () => {
+//   //   ticker.current = 0;
+//   // });
+
+//   let lerp = require("three/src/math/MathUtils").lerp;
+
+//   let did = useRef(false);
+//   let charge = useRef(false);
+//   useFrame(() => {
+//     sphere.center.copy(pt);
+//     if (sphere.containsPoint(Now.avatarAt)) {
+//       ticker.current = ticker.current || 0;
+
+//       ticker.current += 1;
+
+//       if (label !== text.loading) {
+//         setLabel(text.loading);
+//         // getVoicesAPI().charge.play();
+//       }
+
+//       if (!charge.current) {
+//         charge.current = true;
+//       }
+
+//       if (ticker.current >= total) {
+//         if (!did.current) {
+//           did.current = true;
+
+//           if (typeof action === "function") {
+//             action({ setLabel });
+//           }
+//           // getVoicesAPI().teleport.play();
+//         }
+//       }
+//     } else {
+//       ticker.current = 0;
+//       did.current = false;
+//       charge.current = false;
+
+//       if (label !== text.ready) {
+//         setLabel(text.ready);
+//       }
+//       //
+//     }
+
+//     if (ring.current) {
+//       let s = 1 + (ticker.current / total) * 10.0 * magnify;
+//       let cs = ring.current.scale.x;
+//       let ls = lerp(cs, s, 0.1);
+//       ring.current.scale.set(ls, ls, ls);
+//     }
+//   });
+
+//   return (
+//     <Text
+//       position-y={5 * 0.8 * 1.5}
+//       scale={80 * 2 * 0.2 * 0.5}
+//       font={`/font/Cronos-Pro-Light_12448.ttf`}
+//       color={"#ffffff"}
+//       outlineWidth={0.001}
+//       outlineColor={"#000000"}
+//       //
+//     >
+//       {label}
+//     </Text>
+//   );
+// }
