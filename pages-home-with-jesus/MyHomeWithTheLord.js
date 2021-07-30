@@ -294,12 +294,14 @@ function MapStuff({ startAt }) {
         }}
       ></Portal>
       <directionalLight position={[10, 10, 0]}></directionalLight>
-      <directionalLight position={[-10, 10, 0]}></directionalLight>
-      <MapSimulation
-        floor={floor}
-        debugCollider={false}
-        startAt={startAt}
-      ></MapSimulation>
+      <directionalLight position={[-10, 10, -10]}></directionalLight>
+
+      <pointLight
+        intensity={1}
+        distance={1000}
+        decay={0.01}
+        position={[-10, 10, -10]}
+      ></pointLight>
 
       {/* <CubeCamera near={0.1} far={1024} frames={1} position={pos.current}>
         {(texture) => {
@@ -317,6 +319,12 @@ function MapStuff({ startAt }) {
       <Bloomer></Bloomer>
 
       <CubeMap path="/cubemaps/lake/"></CubeMap>
+
+      <MapSimulation
+        floor={floor}
+        debugCollider={false}
+        startAt={startAt}
+      ></MapSimulation>
     </>
   );
 }
