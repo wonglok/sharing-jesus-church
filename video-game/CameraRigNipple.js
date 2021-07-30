@@ -133,7 +133,6 @@ export function CameraRigNipple() {
     // orbit.maxAzimuthAngle = Math.PI * 0.5;
 
     let joystick = document.createElement("div");
-
     document.body.appendChild(joystick);
     joystick.style.cssText = `
       position: absolute;

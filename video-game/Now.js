@@ -3,6 +3,8 @@ import { makeShallowStore } from "../vfx-runtime/ENUtils";
 
 export const Now = makeShallowStore({
   //
+  isWebGL2: false,
+
   isUnLocked: true,
   enableFloorCursor: true,
   keyW: false,

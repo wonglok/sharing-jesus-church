@@ -2,6 +2,7 @@ import { Canvas } from "@react-three/fiber";
 import { getGPUTier } from "detect-gpu";
 import { MyHomeWithTheLord } from "../pages-home-with-jesus/MyHomeWithTheLord";
 import { useState } from "react";
+import { Now } from "../video-game/Now";
 // import { FPCursor } from "../video-game/FPCursor";
 // import { LockScreenHTML } from "../video-game/LockScreenHTML";
 
@@ -24,12 +25,16 @@ function CanvasArea() {
 
       onCreated={({ gl }) => {
         //
+        Now.isWebGL2 = gl.capabilities.isWebGL2;
         getGPUTier({ glContext: gl.getContext() }).then((v) => {
           // ipad
           if (v.gpu === "apple a9x gpu") {
             setDPR([1, 1]);
             return;
           }
+
+          //
+
           if (v.fps < 30) {
             setDPR([1, 1]);
             return;

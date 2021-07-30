@@ -15,6 +15,7 @@ import {
   CubeReflectionMapping,
   CubeRefractionMapping,
   DoubleSide,
+  MeshPhysicalMaterial,
   Vector3,
 } from "three";
 import { Portal } from "../video-game/Portal";
@@ -98,7 +99,22 @@ function MapStuff({ startAt }) {
     cloned.scale.set(2, 2, 2);
     cloned.traverse((it) => {
       if (it.material) {
-        it.material = it.material.clone();
+        if (Now.isWebGL2) {
+          it.material = new MeshPhysicalMaterial({
+            color: it.material.color,
+            reflectivity: 1.0,
+            roughness: 0.0,
+            metalness: 0.37,
+            transmission: 1.0,
+            thickness: 0.1,
+            transparent: true,
+            flatShading: true,
+          });
+        } else {
+          it.material = it.material.clone();
+          it.material.roughness = 0.0;
+          it.material.metalness = 1;
+        }
 
         console.log(it.material.name, it.name);
 
@@ -123,10 +139,8 @@ function MapStuff({ startAt }) {
           enableBloom(it);
         }
 
-        it.geometry.computeVertexNormals();
+        // it.geometry.computeVertexNormals();
 
-        it.material.roughness = 0.0;
-        it.material.metalness = 1;
         it.material.side = DoubleSide;
 
         it.material.envMap = refraction;
@@ -287,53 +301,4 @@ function MapStuff({ startAt }) {
   );
 }
 
-function DetectArea({
-  preload = () => {},
-  loading = () => {},
-  reset = () => {},
-  action = () => {},
-}) {
-  let ref = useRef();
-
-  let count = 0;
-  let exec = false;
-  let worldPos = new Vector3();
-
-  let sphere = useRef(new Sphere(worldPos, 20));
-  useFrame((st, dt) => {
-    //
-    if (ref.current) {
-      sphere.current.center.copy(worldPos);
-      ref.current.getWorldPosition(worldPos);
-
-      if (sphere.current.containsPoint(Now.avatarAt)) {
-        if (count === 0) {
-          preload();
-        }
-
-        loading(count);
-        if (!exec) {
-          count++;
-        }
-
-        if (count >= 60 * 2) {
-          //
-          exec = true;
-          action();
-          //
-        }
-      } else {
-        count = 0;
-        exec = false;
-        reset(count);
-      }
-    }
-  });
-  return (
-    <group ref={ref}>
-      {/*  */}
-      {/*  */}
-      {/*  */}
-    </group>
-  );
-}
+// Procedral VFX CMS
