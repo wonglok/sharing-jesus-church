@@ -99,59 +99,79 @@ function MapStuff({ startAt }) {
     cloned.scale.set(2, 2, 2);
     cloned.traverse((it) => {
       if (it.material) {
+        // it.geometry.computeVertexNormals();
+
         if (Now.isWebGL2) {
           it.material = new MeshPhysicalMaterial({
             color: it.material.color,
-            reflectivity: 1.0,
-            roughness: 0.0,
-            metalness: 0.37,
+            reflectivity: 0.3,
+            roughness: 0.3,
+            metalness: 0.3,
             transmission: 1.0,
-            thickness: 0.1,
+            thickness: 0.3,
             transparent: true,
             flatShading: true,
           });
+
+          it.userData.hoverable = true;
+
+          if (it.material.name.indexOf("leaves") !== -1) {
+            it.userData.hoverable = false;
+            it.material.flatShading = true;
+          }
+
+          if (it.material.name.indexOf("trunk") !== -1) {
+            it.userData.hoverable = false;
+            it.material.flatShading = true;
+          }
+
+          if (it.name === "slope") {
+            it.userData.hoverable = false;
+            it.material.flatShading = false;
+          }
+
+          console.log(it.material.name, it.name);
         } else {
           it.material = it.material.clone();
           it.material.roughness = 0.0;
           it.material.metalness = 1;
-        }
 
-        console.log(it.material.name, it.name);
+          it.userData.hoverable = true;
 
-        it.userData.hoverable = true;
+          if (it.material.name === "leaves") {
+            it.userData.hoverable = false;
+            it.material.flatShading = true;
+          }
+          if (it.material.name === "trunk") {
+            it.userData.hoverable = false;
+            it.material.flatShading = true;
+          }
 
-        if (it.material.name === "leaves") {
-          it.userData.hoverable = false;
-        }
-        if (it.material.name === "trunk") {
-          it.userData.hoverable = false;
-        }
+          if (it.name === "slope") {
+            it.userData.hoverable = false;
+            it.material.flatShading = false;
+          }
 
-        if (it.name === "slope") {
-          it.userData.hoverable = false;
-        }
+          if (it.name === "connect") {
+            enableBloom(it);
+            it.userData.hoverable = false;
+          }
+          if (it.name === "connect-base") {
+            enableBloom(it);
+          }
 
-        if (it.name === "connect") {
-          enableBloom(it);
-          it.userData.hoverable = false;
-        }
-        if (it.name === "connect-base") {
-          enableBloom(it);
-        }
+          it.material.side = DoubleSide;
 
-        // it.geometry.computeVertexNormals();
+          it.material.envMap = refraction;
 
-        it.material.side = DoubleSide;
-
-        it.material.envMap = refraction;
-
-        if (it.material.name === "leaves") {
-          it.material.roughness = 0;
-          it.material.metalness = 1;
-        }
-        if (it.material.name === "trunk") {
-          it.material.roughness = 0;
-          it.material.metalness = 1;
+          if (it.material.name === "leaves") {
+            it.material.roughness = 0;
+            it.material.metalness = 1;
+          }
+          if (it.material.name === "trunk") {
+            it.material.roughness = 0;
+            it.material.metalness = 1;
+          }
         }
 
         // if (it.name.toLowerCase().indexOf("icosphere") !== -1) {
