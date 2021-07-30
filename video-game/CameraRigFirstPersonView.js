@@ -60,9 +60,9 @@ export function CameraRigFirstPersonView() {
   useEffect(() => {
     // let orig = Now.camMode;
     // Now.camMode = Words.firstPerson;
-    Now.avatarSpeed = 3.5;
+    Now.speed = 3.5;
     return () => {
-      Now.avatarSpeed = 1;
+      Now.speed = 1;
       // Now.camMode = orig;
     };
   });
