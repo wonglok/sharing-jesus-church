@@ -1,120 +1,116 @@
 import { createPortal, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
-import { usePinch } from "react-use-gesture";
+// import { usePinch } from "react-use-gesture";
 import { RingBufferGeometry } from "three";
 import { AdditiveBlending } from "three";
 import { CircleBufferGeometry } from "three";
-import { ConeBufferGeometry, Quaternion, Vector2 } from "three";
+// import { ConeBufferGeometry, Quaternion, Vector2 } from "three";
 import { Camera, Vector3 } from "three";
-import { OrbitControls } from "three-stdlib";
+// import { OrbitControls } from ;
 import { Now } from "./Now";
 
-export function CameraRigNipple() {
-  let { camera, get, gl } = useThree();
-  let works = useRef({});
-  Now.makeKeyReactive("camMode");
-  let zoom = useRef(1);
-
-  // usePinch(
-  //   (state) => {
-  //     const {
-  //       da, // [d,a] absolute distance and angle of the two pointers
-  //       vdva, // momentum of the gesture of distance and rotation
-  //       origin, // coordinates of the center between the two touch event
-  //     } = state;
-
-  //     // console.log(vdva[0]);
-  //     // console.log(vdva[0]);
-
-  //     zoom.current += vdva[0] * -0.1;
-
-  //     if (zoom.current <= 0.45) {
-  //       zoom.current -= vdva[0] * -0.1;
-  //     }
-
-  //     if (zoom.current < 0.45) {
-  //       zoom.current = 0.45;
-  //     }
-
-  //     if (zoom.current >= 6.5) {
-  //       zoom.current -= vdva[0] * -0.1;
-  //     }
-
-  //     if (zoom.current > 6.5) {
-  //       zoom.current = 6.5;
-  //     }
-  //   },
-  //   {
-  //     domTarget: gl.domElement,
-  //     eventOptions: {
-  //       passive: false,
-  //     },
-  //   }
-  // );
-
+const useAutoEvent = function (ev, fnc, settings = { passive: false }, dom) {
   useEffect(() => {
-    gl.domElement.parentElement.addEventListener(
-      "touchstart",
-      (ev) => {
-        ev.preventDefault();
-      },
-      { passive: false }
-    );
-
-    gl.domElement.parentElement.addEventListener(
-      "touchmove",
-      (ev) => {
-        ev.preventDefault();
-      },
-      { passive: false }
-    );
-
-    gl.domElement.parentElement.addEventListener(
-      "touchstart",
-      (ev) => {
-        ev.preventDefault();
-      },
-      { passive: false }
-    );
-  }, []);
-
-  useEffect(() => {
-    Now.enableFloorCursor = false;
-    Now.speed = 10;
+    dom = dom || window;
+    dom.addEventListener(ev, fnc, settings);
     return () => {
-      Now.speed = 1;
-      Now.enableFloorCursor = true;
+      dom = dom || window;
+      dom.removeEventListener(ev, fnc);
+    };
+  }, []);
+};
+
+const applyAutoEvent = function (dom, ev, fnc, settings = { passive: false }) {
+  dom = dom || window;
+  dom.addEventListener(ev, fnc, settings);
+  return () => {
+    dom = dom || window;
+    dom.removeEventListener(ev, fnc);
+  };
+};
+
+export function CameraRigFirstPersonView() {
+  let { get, gl } = useThree();
+  let works = useRef({});
+
+  useAutoEvent(
+    `touchstart`,
+    (ev) => {
+      ev.preventDefault();
+    },
+    { passive: false }
+  );
+
+  useAutoEvent(
+    `touchmove`,
+    (ev) => {
+      ev.preventDefault();
+    },
+    { passive: false }
+  );
+
+  useAutoEvent(
+    `touchend`,
+    (ev) => {
+      ev.preventDefault();
+    },
+    { passive: false }
+  );
+
+  useEffect(() => {
+    // let orig = Now.camMode;
+    // Now.camMode = Words.firstPerson;
+    Now.avatarSpeed = 3.5;
+    return () => {
+      Now.avatarSpeed = 1;
+      // Now.camMode = orig;
     };
   });
   //
 
+  useAutoEvent("keydown", (ev) => {
+    // console.log(ev.key);
+
+    if (ev.key === "w") {
+      Now.keyW = true;
+    }
+    if (ev.key === "a") {
+      Now.keyA = true;
+    }
+    if (ev.key === "s") {
+      Now.keyS = true;
+    }
+    if (ev.key === "d") {
+      Now.keyD = true;
+    }
+  });
+  useAutoEvent("keyup", (ev) => {
+    // console.log(ev.key);
+
+    if (ev.key === "w") {
+      Now.keyW = false;
+    }
+    if (ev.key === "a") {
+      Now.keyA = false;
+    }
+    if (ev.key === "s") {
+      Now.keyS = false;
+    }
+    if (ev.key === "d") {
+      Now.keyD = false;
+    }
+  });
+
   useEffect(() => {
+    let camera = get().camera;
     camera.near = 0.1;
     camera.far = 10000;
     camera.fov = 45;
     camera.updateProjectionMatrix();
 
-    gl.domElement.addEventListener(
-      "wheel",
-      (ev) => {
-        ev.preventDefault();
-
-        zoom.current += ev.deltaY * 0.0005;
-        if (zoom.current <= 0.45) {
-          zoom.current -= ev.deltaY * 0.0005;
-        }
-        //
-      },
-      { passive: false }
-    );
-
-    // camera.position
-    //   .copy({
-    //     x: 0,
-    //     y: 3,
-    //     z: 15,
-    //   })
-    //   .multiplyScalar(2 * 3);
+    let {
+      OrbitControls,
+    } = require("three/examples/jsm/controls/OrbitControls");
 
     let fakeCam = new Camera();
     fakeCam.position.z = 5;
@@ -126,13 +122,8 @@ export function CameraRigNipple() {
     orbit.enableDamping = true;
     orbit.rotateSpeed = 0.5;
 
-    // orbit.enableDamping = true;
-    // orbit.minPolarAngle = Math.PI * 0.0;
-    // orbit.maxPolarAngle = Math.PI * 0.5;
-    // orbit.minAzimuthAngle = Math.PI * -0.5;
-    // orbit.maxAzimuthAngle = Math.PI * 0.5;
-
     let joystick = document.createElement("div");
+
     document.body.appendChild(joystick);
     joystick.style.cssText = `
       position: absolute;
@@ -173,55 +164,53 @@ export function CameraRigNipple() {
     let up = new Vector3(0, 1, 0);
 
     let ttt = 0;
+    let isUsing = false;
     manager.on("start move dir plain", function (evt, nipple) {
       if (nipple?.angle?.radian) {
+        orbit.enableRotate = false;
         forward.set(0, 0, -1);
         forward.applyAxisAngle(
           up,
           orbit.getAzimuthalAngle() + nipple?.angle?.radian - Math.PI * 0.5 ||
             0.0
         );
+        isUsing = true;
         Now.isDown = true;
+
+        clearTimeout(ttt);
+        ttt = setTimeout(() => {
+          isUsing = false;
+        }, 100);
       }
     });
-    manager.on("end hidden removed", () => {
+
+    manager.on("end", () => {
       forward.multiplyScalar(0);
       Now.isDown = false;
-      orbit.enabled = true;
+      orbit.enableRotate = true;
+      isUsing = false;
     });
 
-    window.addEventListener("keydown", (ev) => {
-      // console.log(ev.key);
-
-      if (ev.key === "w") {
-        Now.keyW = true;
-      }
-      if (ev.key === "a") {
-        Now.keyA = true;
-      }
-      if (ev.key === "s") {
-        Now.keyS = true;
-      }
-      if (ev.key === "d") {
-        Now.keyD = true;
-      }
-    });
-    window.addEventListener("keyup", (ev) => {
-      // console.log(ev.key);
-
-      if (ev.key === "w") {
-        Now.keyW = false;
-      }
-      if (ev.key === "a") {
-        Now.keyA = false;
-      }
-      if (ev.key === "s") {
-        Now.keyS = false;
-      }
-      if (ev.key === "d") {
-        Now.keyD = false;
-      }
-    });
+    let cte = applyAutoEvent(
+      gl.domElement.parentElement,
+      `touchend`,
+      (ev) => {
+        if (!isUsing) {
+          orbit.enableRotate = true;
+        }
+      },
+      { passive: false }
+    );
+    let cts = applyAutoEvent(
+      gl.domElement.parentElement,
+      `touchstart`,
+      (ev) => {
+        if (!isUsing) {
+          orbit.enableRotate = true;
+        }
+      },
+      { passive: false }
+    );
 
     let keyBoardForward = new Vector3(0, 0, 1);
     works.current.ctrl2 = () => {
@@ -234,30 +223,31 @@ export function CameraRigNipple() {
         keyBoardForward.applyEuler(camera.rotation);
         keyBoardForward.y = 0.0;
 
-        Now.goingTo.add(keyBoardForward);
+        Now.avatarAt.add(keyBoardForward);
       } else if (Now.keyA) {
         keyBoardForward.set(-1, 0, 0);
         keyBoardForward.applyEuler(camera.rotation);
         keyBoardForward.y = 0.0;
 
-        Now.goingTo.add(keyBoardForward);
+        Now.avatarAt.add(keyBoardForward);
       } else if (Now.keyS) {
         keyBoardForward.set(0, 0, 1);
         keyBoardForward.applyEuler(camera.rotation);
         keyBoardForward.y = 0.0;
 
-        Now.goingTo.add(keyBoardForward);
+        Now.avatarAt.add(keyBoardForward);
       } else if (Now.keyD) {
         keyBoardForward.set(1, 0, 0);
         keyBoardForward.applyEuler(camera.rotation);
         keyBoardForward.y = 0.0;
 
-        Now.goingTo.add(keyBoardForward);
+        Now.avatarAt.add(keyBoardForward);
       }
 
-      if (!(Now.keyW || Now.keyA || Now.keyS || Now.keyD)) {
-        Now.goingTo.copy(Now.avatarAt);
-      }
+      Now.goingTo.copy(Now.avatarAt);
+      // if (!(Now.keyW || Now.keyA || Now.keyS || Now.keyD)) {
+      //   Now.avatarAt.copy(Now.avatarAt);
+      // }
     };
 
     // grid of raycaster
@@ -265,12 +255,10 @@ export function CameraRigNipple() {
     works.current.ctrl3 = () => {
       let newType = "floor";
 
-      let upness = Now.cursorNormal.y || 0;
+      // let upness = Now.cursorNormal.y || 0;
       if (Now.cursorType !== newType) {
         Now.cursorType = newType;
       }
-
-      // hover();
     };
 
     works.current.ctrl = () => {
@@ -279,7 +267,7 @@ export function CameraRigNipple() {
       Now.goingTo.add(forward);
 
       camera.position.x = Now.avatarAt.x;
-      camera.position.y = Now.avatarAt.y + 5;
+      camera.position.y = Now.avatarAt.y + 1;
       camera.position.z = Now.avatarAt.z;
 
       camera.rotation.copy(fakeCam.rotation);
@@ -294,6 +282,8 @@ export function CameraRigNipple() {
 
       joystick.remove();
       note.remove();
+      cte();
+      cts();
     };
   }, []);
 
@@ -304,7 +294,7 @@ export function CameraRigNipple() {
     <group>
       {createPortal(
         <group>
-          <MyCursor></MyCursor>
+          <FloatingCursor></FloatingCursor>
         </group>,
         get().scene
       )}
@@ -312,7 +302,7 @@ export function CameraRigNipple() {
   );
 }
 
-function MyCursor() {
+function FloatingCursor() {
   let cursor = useRef();
 
   let t1 = new Vector3();
