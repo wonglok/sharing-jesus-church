@@ -155,8 +155,6 @@ function MapFloor() {
                 z: -0.06740962023805253,
               });
 
-              //
-
               let router = require("next/router").default;
               router.push({
                 pathname: "/room/heavenly",
@@ -290,7 +288,7 @@ export function MapScene() {
 
 function Cross() {
   let fbx = useFBX(`/church/holy-cross.fbx`);
-
+  fbx = SkeletonUtils.clone(fbx);
   useEffect(() => {
     fbx.traverse((it) => {
       if (it.name === "BezierCurve") {
